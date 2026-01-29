@@ -237,7 +237,7 @@ function render_create_git_branch_page()
 						<th>Branch Name</th>
 						<td>
 							<input type="text" name="branch_name" required
-								   placeholder="feature/new-ui"
+								   placeholder="New Branch Name"
 								   style="width:300px;">
 						</td>
 					</tr>

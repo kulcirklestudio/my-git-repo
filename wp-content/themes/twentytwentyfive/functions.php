@@ -250,10 +250,62 @@ function render_create_git_branch_page()
 		</form>
 
 		<?php if ($message): ?>
-			<pre style="background:#fff;padding:12px;border-left:4px solid #2271b1;">
-						<?php echo esc_html($message); ?>
-									</pre>
+			<pre style="background:#fff;padding:12px;border-left:4px solid #2271b1;"> <?php echo esc_html($message); ?> </pre>
 		<?php endif; ?>
+
+		<!-- List All Branches -->
+		<div class="list-all-branch" style="background:#fff0;padding:20px;border:4px solid #2272b1;border-radius:10px">
+			<h1 style="font-size:25px;text-align: center;font-weight: 700;">All Branches</h1>
+
+			<?php
+			// CHANGE PATH if WP is not in repo root
+			$repo_path = ABSPATH;
+
+			// fetch remote branches
+			$cmd = "cd " . escapeshellarg($repo_path) . " && git fetch origin && git branch -r";
+			exec($cmd . " 2>&1", $output, $status);
+
+			$branches = [];
+
+			foreach ($output as $line) {
+				$line = trim($line);
+
+				if (strpos($line, '->') !== false) {
+					continue;
+				}
+
+				if (str_starts_with($line, 'origin/')) {
+					$line = substr($line, 7);
+				}
+
+				$branches[] = $line;
+			}
+
+			$protected_branches = ['main', 'master'];
+
+			foreach ($branches as $branch) {
+				echo escapeshellarg($repo_path);
+				echo exec($cmd . " 2>&1", $output, $status);
+				$is_protected = in_array($branch, $protected_branches);
+				?>
+				<div
+					style="display: flex; justify-content: space-between; align-items: center; gap: 20px; background:#fff; padding: 16px; border-left: 4px solid #2271b1; margin: 10px; border-radius: 4px;">
+					<p style="font-size: 16px;font-weight:700;margin:0px;" data-branch="<?php echo esc_html($branch); ?>">
+						<?php echo esc_html($branch); ?>
+					</p>
+
+					<?php if (!$is_protected) { ?>
+						<button type="submit" name="delete_git_branch" class="button button-primary"
+							style="font-size: 14px;font-weight:500;" data-branch="<?php echo esc_html($branch); ?>">
+							Delete Branch
+						</button>
+					<?php } else {
+							echo '<p style="font-size: 14px;font-weight:500;margin:0px;">Main Branch Cannot Delete!!!</p>';
+					} ?>
+
+				</div>
+			<?php } ?>
+		</div>
 	</div>
 	<?php
 }

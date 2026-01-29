@@ -213,7 +213,8 @@ function render_create_git_branch_page()
 				. "git checkout main && "
 				. "git pull origin main && "
 				. "git checkout -b " . escapeshellarg($branch) . " && "
-				. "git push origin " . escapeshellarg($branch);
+				. "git push origin " . escapeshellarg($branch)
+				. "git push --set-upstream origin " . escapeshellarg($branch) . "";
 
 			exec($cmd . " 2>&1", $output, $status);
 

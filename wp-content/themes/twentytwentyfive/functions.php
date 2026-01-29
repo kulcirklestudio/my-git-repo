@@ -321,7 +321,7 @@ function render_create_git_branch_page()
 				}
 
 				$repo_path = ABSPATH;
-				$backup_dir = ABSPATH . 'wp-content/backups/git';
+				$backup_dir = ABSPATH . '/allbackup';
 				if (!is_dir($backup_dir))
 					mkdir($backup_dir, 0755, true);
 

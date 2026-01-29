@@ -284,8 +284,6 @@ function render_create_git_branch_page()
 			$protected_branches = ['main', 'master'];
 
 			foreach ($branches as $branch) {
-				echo escapeshellarg($repo_path);
-				echo exec($cmd . " 2>&1", $output, $status);
 				$is_protected = in_array($branch, $protected_branches);
 				?>
 				<div
@@ -300,12 +298,68 @@ function render_create_git_branch_page()
 							Delete Branch
 						</button>
 					<?php } else {
-							echo '<p style="font-size: 14px;font-weight:500;margin:0px;">Main Branch Cannot Delete!!!</p>';
+						echo '<p style="font-size: 14px;font-weight:500;margin:0px;">Main Branch Cannot Delete!!!</p>';
 					} ?>
 
 				</div>
-			<?php } ?>
+			<?php }
+
+			if (isset($_POST['branch_to_delete'])) {
+				check_admin_referer('delete_git_branch_nonce');
+
+				$branch = trim($_POST['branch_to_delete']);
+
+				// protect main branches again (never trust UI)
+				$protected = ['main', 'master'];
+				if (in_array($branch, $protected)) {
+					die('Protected branch cannot be deleted.');
+				}
+
+				// validate branch name
+				if (!preg_match('/^[a-zA-Z0-9._\-\/]+$/', $branch)) {
+					die('Invalid branch name.');
+				}
+
+				$repo_path = ABSPATH;
+				$backup_dir = ABSPATH . 'wp-content/backups/git';
+				if (!is_dir($backup_dir))
+					mkdir($backup_dir, 0755, true);
+
+				$bundle = $backup_dir . '/repo-backup-' . date('Ymd-His') . '.bundle';
+
+				$cmd =
+					"cd " . escapeshellarg($repo_path) . " && "
+					. "git fetch origin && "
+					. "git checkout " . escapeshellarg($branch) . " && "
+					. "git checkout -b backup/" . escapeshellarg($branch) . " && "
+					. "git push origin backup/" . escapeshellarg($branch) . " && "
+					. "git bundle create " . escapeshellarg($bundle) . " --all && "
+					. "git checkout main && "
+					. "git branch -D " . escapeshellarg($branch) . " && "
+					. "git push origin --delete " . escapeshellarg($branch);
+
+				exec($cmd . " 2>&1", $output, $status);
+			}
+
+			?>
+			<form method="post" id="deleteBranchForm">
+				<?php wp_nonce_field('delete_git_branch_nonce'); ?>
+				<input type="hidden" name="branch_to_delete" id="delete_branch_input">
+			</form>
+
 		</div>
+		<script>
+			document.addEventListener('click', function (e) {
+				if (e.target.name === 'delete_git_branch') {
+					if (!confirm('This will BACKUP and DELETE the branch. Continue?')) return;
+
+					const branch = e.target.dataset.branch;
+					document.getElementById('delete_branch_input').value = branch;
+					document.getElementById('deleteBranchForm').submit();
+				}
+			});
+
+		</script>
 	</div>
 	<?php
 }

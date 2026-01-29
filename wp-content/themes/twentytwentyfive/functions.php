@@ -213,10 +213,10 @@ function render_create_git_branch_page()
 				. "git checkout main && "
 				. "git pull origin main && "
 				. "git checkout -b " . escapeshellarg($branch) . " && "
-				. "git push origin " . escapeshellarg($branch)
-				. "git push --set-upstream origin " . escapeshellarg($branch) . "";
+				. "git push --set-upstream origin " . escapeshellarg($branch);
 
 			exec($cmd . " 2>&1", $output, $status);
+
 
 			if ($status === 0) {
 				$message = "✅ Branch '{$branch}' created & pushed successfully.";
@@ -227,36 +227,33 @@ function render_create_git_branch_page()
 	}
 	?>
 
-		<div class="wrap">
-			<h1>Create Git Branch</h1>
+	<div class="wrap">
+		<h1>Create Git Branch</h1>
 
-			<form method="post">
-				<?php wp_nonce_field('create_git_branch_nonce'); ?>
+		<form method="post">
+			<?php wp_nonce_field('create_git_branch_nonce'); ?>
 
-				<table class="form-table">
-					<tr>
-						<th>Branch Name</th>
-						<td>
-							<input type="text" name="branch_name" required
-								   placeholder="New Branch Name:"
-								   style="width:300px;">
-						</td>
-					</tr>
-				</table>
+			<table class="form-table">
+				<tr>
+					<th>Branch Name</th>
+					<td>
+						<input type="text" name="branch_name" required placeholder="New Branch Name:" style="width:300px;">
+					</td>
+				</tr>
+			</table>
 
-				<p>
-					<button type="submit" name="create_git_branch"
-							class="button button-primary">
-						Create Branch
-					</button>
-				</p>
-			</form>
+			<p>
+				<button type="submit" name="create_git_branch" class="button button-primary">
+					Create Branch
+				</button>
+			</p>
+		</form>
 
-			<?php if ($message): ?>
-					<pre style="background:#fff;padding:12px;border-left:4px solid #2271b1;">
-		<?php echo esc_html($message); ?>
-					</pre>
-			<?php endif; ?>
-		</div>
-		<?php
+		<?php if ($message): ?>
+			<pre style="background:#fff;padding:12px;border-left:4px solid #2271b1;">
+						<?php echo esc_html($message); ?>
+									</pre>
+		<?php endif; ?>
+	</div>
+	<?php
 }

@@ -255,7 +255,7 @@ function render_create_git_branch_page()
 
 		<!---------------------------------------
 		---------------------	List All Branches
-		-->
+		---------------------------------------->
 		<div class="list-all-branch" style="background:#fff0;padding:20px;border:4px solid #2272b1;border-radius:10px">
 			<h1 style="font-size:25px;text-align: center;font-weight: 700;">All Branches</h1>
 

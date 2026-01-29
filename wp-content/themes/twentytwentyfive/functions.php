@@ -263,24 +263,34 @@ function render_create_git_branch_page()
 			// CHANGE PATH if WP is not in repo root
 			$repo_path = ABSPATH;
 
-			// fetch remote branches
-			$cmd = "cd " . escapeshellarg($repo_path) . " && git fetch origin && git branch -r";
-			exec($cmd . " 2>&1", $output, $status);
+			// IMPORTANT: isolate exec output
+			$branch_output = [];
+			$branch_status = null;
+
+			// Fetch branches safely (NO noise)
+			$cmd = "cd " . escapeshellarg($repo_path)
+				. " && git fetch origin --quiet"
+				. " && git for-each-ref --format=%(refname:short)";
+
+			exec($cmd . " 2>&1", $branch_output, $branch_status);
 
 			$branches = [];
 
-			foreach ($output as $line) {
+			foreach ($branch_output as $line) {
 				$line = trim($line);
 
-				if (strpos($line, '->') !== false) {
+				// Skip HEAD pointer
+				if ($line === 'origin/HEAD') {
 					continue;
 				}
 
-				if (str_starts_with($line, 'origin/')) {
-					$line = substr($line, 7);
+				// Allow ONLY origin branches
+				if (!preg_match('#^origin/[a-zA-Z0-9._\-/]+$#', $line)) {
+					continue;
 				}
 
-				$branches[] = $line;
+				// Remove origin/
+				$branches[] = substr($line, 7);
 			}
 
 			$protected_branches = ['main', 'master'];
@@ -304,9 +314,8 @@ function render_create_git_branch_page()
 					} ?>
 
 				</div>
-			<?php }
+			<?php } ?>
 
-			?>
 			<form method="post" id="deleteBranchForm">
 				<?php wp_nonce_field('delete_git_branch_nonce'); ?>
 				<input type="hidden" name="branch_to_delete" id="delete_branch_input">

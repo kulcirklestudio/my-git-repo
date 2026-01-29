@@ -253,7 +253,9 @@ function render_create_git_branch_page()
 			<pre style="background:#fff;padding:12px;border-left:4px solid #2271b1;"> <?php echo esc_html($message); ?> </pre>
 		<?php endif; ?>
 
-		<!-- List All Branches -->
+		<!---------------------------------------
+		---------------------	List All Branches
+		-->
 		<div class="list-all-branch" style="background:#fff0;padding:20px;border:4px solid #2272b1;border-radius:10px">
 			<h1 style="font-size:25px;text-align: center;font-weight: 700;">All Branches</h1>
 
@@ -303,43 +305,6 @@ function render_create_git_branch_page()
 
 				</div>
 			<?php }
-
-			if (isset($_POST['branch_to_delete'])) {
-				check_admin_referer('delete_git_branch_nonce');
-
-				$branch = trim($_POST['branch_to_delete']);
-
-				// protect main branches again (never trust UI)
-				$protected = ['main', 'master'];
-				if (in_array($branch, $protected)) {
-					die('Protected branch cannot be deleted.');
-				}
-
-				// validate branch name
-				if (!preg_match('/^[a-zA-Z0-9._\-\/]+$/', $branch)) {
-					die('Invalid branch name.');
-				}
-
-				$repo_path = ABSPATH;
-				$backup_dir = ABSPATH . '/allbackup';
-				if (!is_dir($backup_dir))
-					mkdir($backup_dir, 0755, true);
-
-				$bundle = $backup_dir . '/repo-backup-' . date('Ymd-His') . '.bundle';
-
-				$cmd =
-					"cd " . escapeshellarg($repo_path) . " && "
-					. "git fetch origin && "
-					. "git checkout " . escapeshellarg($branch) . " && "
-					. "git checkout -b backup/" . escapeshellarg($branch) . " && "
-					. "git push origin backup/" . escapeshellarg($branch) . " && "
-					. "git bundle create " . escapeshellarg($bundle) . " --all && "
-					. "git checkout main && "
-					. "git branch -D " . escapeshellarg($branch) . " && "
-					. "git push origin --delete " . escapeshellarg($branch);
-
-				exec($cmd . " 2>&1", $output, $status);
-			}
 
 			?>
 			<form method="post" id="deleteBranchForm">

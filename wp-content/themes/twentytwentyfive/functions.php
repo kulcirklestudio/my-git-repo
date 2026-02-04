@@ -342,7 +342,7 @@ function render_create_git_branch_page()
 
 	<script>
 		document.addEventListener('click', function (e) {
-			if (e.target.classList.contains('delete-branch')) {
+			if (e.target.classList.contains('git-branch-delete')) {
 				if (!confirm('This will delete the branch locally and remotely. Continue?')) return;
 				document.getElementById('delete_branch_input').value = e.target.dataset.branch;
 				document.getElementById('deleteBranchForm').submit();

@@ -349,6 +349,18 @@ function render_create_git_branch_page()
 				<p class="git-branch-name" data-branch="<?php echo esc_html($branch); ?>">
 					<?php echo esc_html($branch); ?>
 				</p>
+				<div class="status">
+					<?php
+					$cmd = 'cd ' . escapeshellarg($repo_path)
+						. ' && git checkout ' . esc_html($branch) . ' '
+						. ' && git status';
+
+					exec($cmd . ' 2>&1', $output, $status);
+					foreach ($output as $op) {
+						echo '<p>' . $op . '</p>';
+					}
+					?>
+				</div>
 
 				<?php if (!in_array($branch, $protected_branches)) { ?>
 					<button type="button" name="delete_git_branch" class="button git-branch-delete"

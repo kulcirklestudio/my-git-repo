@@ -274,7 +274,7 @@ function render_create_git_branch_page()
 
 			$cmd = implode(' && ', [
 				'cd ' . escapeshellarg($repo_path),
-				'git bundle create allbackup/Backup-Branch-' . escapeshellarg($branch) . '-' . date('Y-m-d_H-i-s') . '.bundle ' . escapeshellarg($branch) . '',
+				'git bundle create allbackup/Backup-Branch-' . escapeshellarg($branch) . '-' . date('Y-m-d_H:i:s') . '.bundle ' . escapeshellarg($branch) . '',
 				'git checkout main',
 				'git branch -D ' . escapeshellarg($branch),
 				'git push origin --delete ' . escapeshellarg($branch),

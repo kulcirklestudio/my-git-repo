@@ -187,61 +187,106 @@ add_action('admin_menu', function () {
 	);
 });
 
-function render_create_git_branch_page()
-{
+function render_create_git_branch_page() {
+
 	if (!current_user_can('manage_options')) {
 		return;
 	}
 
+	// -----------------------------
+	// CONFIG
+	// -----------------------------
+	$repo_path = ABSPATH; // change if needed
+	$protected_branches = ['main', 'master'];
 	$message = '';
 
+	// -----------------------------
+	// CREATE BRANCH
+	// -----------------------------
 	if (isset($_POST['create_git_branch'])) {
+
 		check_admin_referer('create_git_branch_nonce');
 
-		$branch = trim($_POST['branch_name']);
+		$branch = sanitize_text_field(trim($_POST['branch_name']));
 
-		// Validate branch name
 		if (!preg_match('/^[a-zA-Z0-9._\-\/]+$/', $branch)) {
 			$message = '❌ Invalid branch name.';
 		} else {
 
-			// CHANGE PATH if WP is not in repo root
-			$repo_path = ABSPATH;
+			$cmd = implode(' && ', [
+				'cd ' . escapeshellarg($repo_path),
+				'git fetch origin --quiet',
+				'git checkout main',
+				'git pull origin main',
+				'git checkout -b ' . escapeshellarg($branch),
+				'git push --set-upstream origin ' . escapeshellarg($branch),
+			]);
 
-			$cmd = "cd " . escapeshellarg($repo_path) . " && "
-				. "git fetch origin && "
-				. "git checkout main && "
-				. "git pull origin main && "
-				. "git checkout -b " . escapeshellarg($branch) . " && "
-				. "git push --set-upstream origin " . escapeshellarg($branch);
+			exec($cmd . ' 2>&1', $output, $status);
 
-			exec($cmd . " 2>&1", $output, $status);
+			$message = ($status === 0)
+				? "✅ Branch '{$branch}' created & pushed successfully."
+				: "❌ Error:\n" . implode("\n", $output);
+		}
+	}
 
+	// -----------------------------
+	// DELETE BRANCH
+	// -----------------------------
+	if (isset($_POST['branch_to_delete'])) {
 
-			if ($status === 0) {
-				$message = "✅ Branch '{$branch}' created & pushed successfully.";
-			} else {
-				$message = "❌ Error:\n" . implode("\n", $output);
+		check_admin_referer('delete_git_branch_nonce');
+
+		$branch = sanitize_text_field($_POST['branch_to_delete']);
+
+		if (in_array($branch, $protected_branches, true)) {
+			$message = '❌ Protected branch cannot be deleted.';
+		} else {
+
+			$cmd = implode(' && ', [
+				'cd ' . escapeshellarg($repo_path),
+				'git checkout main',
+				'git branch -D ' . escapeshellarg($branch),
+				'git push origin --delete ' . escapeshellarg($branch),
+			]);
+
+			exec($cmd . ' 2>&1', $output, $status);
+
+			$message = ($status === 0)
+				? "✅ Branch '{$branch}' deleted successfully."
+				: "❌ Error deleting branch:\n" . implode("\n", $output);
+		}
+	}
+
+	// -----------------------------
+	// FETCH BRANCHES (ONCE)
+	// -----------------------------
+	$branches = [];
+	$cmd = 'cd ' . escapeshellarg($repo_path)
+		. ' && git fetch origin --quiet'
+		. ' && git for-each-ref --format="%(refname:short)" refs/remotes/origin';
+
+	exec($cmd . ' 2>&1', $output, $status);
+
+	if ($status === 0) {
+		foreach ($output as $line) {
+			$line = trim($line);
+			if ($line !== 'origin/HEAD') {
+				$branches[] = substr($line, 7); // remove origin/
 			}
 		}
 	}
-	?>
 
+	// -----------------------------
+	// UI
+	// -----------------------------
+	?>
 	<div class="wrap">
 		<h1>Create Git Branch</h1>
 
 		<form method="post">
 			<?php wp_nonce_field('create_git_branch_nonce'); ?>
-
-			<table class="form-table">
-				<tr>
-					<th>Branch Name</th>
-					<td>
-						<input type="text" name="branch_name" required placeholder="New Branch Name:" style="width:300px;">
-					</td>
-				</tr>
-			</table>
-
+			<input type="text" name="branch_name" required placeholder="New Branch Name" style="width:300px;">
 			<p>
 				<button type="submit" name="create_git_branch" class="button button-primary">
 					Create Branch
@@ -250,120 +295,44 @@ function render_create_git_branch_page()
 		</form>
 
 		<?php if ($message): ?>
-			<pre style="background:#fff;padding:12px;border-left:4px solid #2271b1;"> <?php echo esc_html($message); ?> </pre>
+			<pre class="notice notice-info"><?php echo esc_html($message); ?></pre>
 		<?php endif; ?>
 
-		<!---------------------------------------
-		---------------------	List All Branches
-		---------------------------------------->
-		<div class="list-all-branch" style="background:#fff0;padding:20px;border:4px solid #2272b1;border-radius:10px">
-			<h1 style="font-size:25px;text-align: center;font-weight: 700;">All Branches</h1>
+		<hr>
 
-			<?php
-			// CHANGE PATH if WP is not in repo root
-			$repo_path = ABSPATH;
+		<h2>All Branches</h2>
 
-			// IMPORTANT: isolate exec output
-			$branch_output = [];
-			$branch_status = null;
+		<?php foreach ($branches as $branch): ?>
+			<div style="display:flex;justify-content:space-between;align-items:center;padding:12px;background:#fff;margin:8px 0;">
+				<strong><?php echo esc_html($branch); ?></strong>
 
-			// Fetch branches safely (NO noise)
-			$cmd = "cd " . escapeshellarg($repo_path)
-				. " && git fetch origin --quiet"
-				. " && git for-each-ref --format=%(refname:short)";
+				<?php if (!in_array($branch, $protected_branches, true)): ?>
+					<button
+						type="button"
+						class="button button-secondary delete-branch"
+						data-branch="<?php echo esc_attr($branch); ?>">
+						Delete
+					</button>
+				<?php else: ?>
+					<em>Protected</em>
+				<?php endif; ?>
+			</div>
+		<?php endforeach; ?>
 
-			exec($cmd . " 2>&1", $branch_output, $branch_status);
-
-			$branches = [];
-
-			foreach ($branch_output as $line) {
-				$line = trim($line);
-
-				// Skip HEAD pointer
-				if ($line === 'origin/HEAD') {
-					continue;
-				}
-
-				// Allow ONLY origin branches
-				if (!preg_match('#^origin/[a-zA-Z0-9._\-/]+$#', $line)) {
-					continue;
-				}
-
-				// Remove origin/
-				$branches[] = substr($line, 7);
-			}
-
-			$protected_branches = ['main', 'master'];
-
-			foreach ($branches as $branch) {
-				$is_protected = in_array($branch, $protected_branches);
-				?>
-				<div
-					style="display: flex; justify-content: space-between; align-items: center; gap: 20px; background:#fff; padding: 16px; border-left: 4px solid #2271b1; margin: 10px; border-radius: 4px;">
-					<p style="font-size: 16px;font-weight:700;margin:0px;" data-branch="<?php echo esc_html($branch); ?>">
-						<?php echo esc_html($branch); ?>
-					</p>
-
-					<?php if (!$is_protected) { ?>
-						<button type="button" name="delete_git_branch" class="button button-primary"
-							style="font-size: 14px;font-weight:500;" data-branch="<?php echo esc_html($branch); ?>">
-							Delete Branch
-						</button>
-					<?php } else {
-						echo '<p style="font-size: 14px;font-weight:500;margin:0px;">Main Branch Cannot Delete!!!</p>';
-					} ?>
-
-				</div>
-			<?php } ?>
-
-			<form method="post" id="deleteBranchForm">
-				<?php wp_nonce_field('delete_git_branch_nonce'); ?>
-				<input type="hidden" name="branch_to_delete" id="delete_branch_input">
-			</form>
-
-		</div>
-		<script>
-			document.addEventListener('click', function (e) {
-				if (e.target.name === 'delete_git_branch') {
-					if (!confirm('This will BACKUP and DELETE the branch. Continue?')) return;
-
-					const branch = e.target.dataset.branch;
-					document.getElementById('delete_branch_input').value = branch;
-					document.getElementById('deleteBranchForm').submit();
-				}
-			});
-
-		</script>
+		<form method="post" id="deleteBranchForm">
+			<?php wp_nonce_field('delete_git_branch_nonce'); ?>
+			<input type="hidden" name="branch_to_delete" id="delete_branch_input">
+		</form>
 	</div>
+
+	<script>
+		document.addEventListener('click', function (e) {
+			if (e.target.classList.contains('delete-branch')) {
+				if (!confirm('This will delete the branch locally and remotely. Continue?')) return;
+				document.getElementById('delete_branch_input').value = e.target.dataset.branch;
+				document.getElementById('deleteBranchForm').submit();
+			}
+		});
+	</script>
 	<?php
-	if (isset($_POST['branch_to_delete'])) {
-		$branch = sanitize_text_field($_POST['branch_to_delete']);
-
-		$protected_branches = ['main', 'master'];
-
-		if (in_array($branch, $protected_branches, true)) {
-			echo '<p style="font-size: 14px;font-weight:500;margin:0px;">Main Branch Cannot Delete!!!</p>';
-			return;
-		}
-
-		$repo_path = ABSPATH;
-
-		$commands = [
-			"cd " . escapeshellarg($repo_path),
-			"git checkout main", // move away from branch
-			"git branch -D " . escapeshellarg($branch), // delete local
-			"git push origin --delete " . escapeshellarg($branch) //delete remote
-		];
-
-		$output = [];
-		$status = 0;
-
-		exec(implode(" && ", $commands) . " 2>&1", $output, $status);
-
-		if ($status === 0) {
-			echo '<div class="notice notice-success"><p>Branch deleted successfully.</p></div>';
-		} else {
-			echo '<div class="notice notice-error"><p>Error deleting branch:</p><pre>' . esc_html(implode("\n", $output)) . '</pre></div>';
-		}
-	}
 }

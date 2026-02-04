@@ -187,6 +187,26 @@ add_action('admin_menu', function () {
 	);
 });
 
+function get_main_git_branch($repo_path)
+{
+	$output = [];
+	$status = 0;
+
+	exec(
+		"cd " . escapeshellarg($repo_path) . " && git symbolic-ref --short refs/remotes/origin/HEAD 2>/dev/null",
+		$output,
+		$status
+	);
+
+	if ($status === 0 && !empty($output[0])) {
+		// origin/main → main
+		return str_replace('origin/', '', trim($output[0]));
+	}
+
+	return null; // repo without origin or error
+}
+
+
 function render_create_git_branch_page()
 {
 
@@ -197,8 +217,16 @@ function render_create_git_branch_page()
 	// -----------------------------
 	// CONFIG
 	// -----------------------------
-	$repo_path = ABSPATH; // change if needed
-	$protected_branches = ['main', 'master'];
+	$repo_path = ABSPATH;
+	$main_branch = get_main_git_branch($repo_path);
+
+	// fallback safety
+	if (!$main_branch) {
+		$main_branch = 'main';
+	}
+
+	$protected_branches = [$main_branch];
+
 	$message = '';
 
 	// -----------------------------

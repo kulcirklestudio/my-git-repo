@@ -305,7 +305,7 @@ function render_create_git_branch_page()
 					</p>
 
 					<?php if (!$is_protected) { ?>
-						<button type="submit" name="delete_git_branch" class="button button-primary"
+						<button type="button" name="delete_git_branch" class="button button-primary"
 							style="font-size: 14px;font-weight:500;" data-branch="<?php echo esc_html($branch); ?>">
 							Delete Branch
 						</button>
@@ -336,4 +336,34 @@ function render_create_git_branch_page()
 		</script>
 	</div>
 	<?php
+	if (isset($_POST['branch_to_delete'])) {
+		$branch = sanitize_text_field($_POST['branch_to_delete']);
+
+		$protected_branches = ['main', 'master'];
+
+		if (in_array($branch, $protected_branches, true)) {
+			echo '<p style="font-size: 14px;font-weight:500;margin:0px;">Main Branch Cannot Delete!!!</p>';
+			return;
+		}
+
+		$repo_path = ABSPATH;
+
+		$commands = [
+			"cd " . escapeshellarg($repo_path),
+			"git checkout main", // move away from branch
+			"git branch -D " . escapeshellarg($branch), // delete local
+			"git push origin --delete " . escapeshellarg($branch) //delete remote
+		];
+
+		$output = [];
+		$status = 0;
+
+		exec(implode(" && ", $commands) . " 2>&1", $output, $status);
+
+		if ($status === 0) {
+			echo '<div class="notice notice-success"><p>Branch deleted successfully.</p></div>';
+		} else {
+			echo '<div class="notice notice-error"><p>Error deleting branch:</p><pre>' . esc_html(implode("\n", $output)) . '</pre></div>';
+		}
+	}
 }

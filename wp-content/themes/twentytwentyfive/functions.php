@@ -193,7 +193,7 @@ function get_main_git_branch($repo_path)
 	$status = 0;
 
 	exec(
-		"cd " . escapeshellarg($repo_path) . " && git symbolic-ref --short refs/remotes/origin/HEAD 2>/dev/null",
+		"cd " . escapeshellarg($repo_path) . " && git symbolic-ref --short refs/remotes/origin/HEAD 2>/dev/null", //2>/dev/null means if git shows error it wont be seen
 		$output,
 		$status
 	);

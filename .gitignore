@@ -1,5 +1,6 @@
 node_modules/
 uploads/
 .env
+allbackup/
 wp-config.php
 *.log

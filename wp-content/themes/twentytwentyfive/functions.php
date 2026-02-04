@@ -274,6 +274,7 @@ function render_create_git_branch_page()
 
 			$cmd = implode(' && ', [
 				'cd ' . escapeshellarg($repo_path),
+				'git bundle create allbackup/Backup-Branch-' . escapeshellarg($branch) . '-$(date +%F).bundle ' . escapeshellarg($branch) . '',
 				'git checkout main',
 				'git branch -D ' . escapeshellarg($branch),
 				'git push origin --delete ' . escapeshellarg($branch),
@@ -368,15 +369,7 @@ function render_create_git_branch_page()
 		</form>
 	</div>
 
-	<script>
-		document.addEventListener('click', function (e) {
-			if (e.target.classList.contains('git-branch-delete')) {
-				if (!confirm('This will delete the branch locally and remotely. Continue?')) return;
-				document.getElementById('delete_branch_input').value = e.target.dataset.branch;
-				document.getElementById('deleteBranchForm').submit();
-			}
-		});
-	</script>
+	<script>		document.addEventListener('click', function (e) {			if (e.target.classList.contains('git-branch-delete')) {				if (!confirm('This will delete the branch locally and remotely. Continue?')) return;				document.getElementById('delete_branch_input').value = e.target.dataset.branch;				document.getElementById('deleteBranchForm').submit();			}		});</script>
 	<style>
 		/* Container */
 		.list-all-branch {

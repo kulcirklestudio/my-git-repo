@@ -356,9 +356,12 @@ function render_create_git_branch_page()
 						. ' && git status';
 
 					exec($cmd . ' 2>&1', $output, $status);
-					foreach ($output as $op) {
-						echo '<p>' . $op . '</p>';
-					}
+
+					echo '<ul>';
+					foreach ($output as $op):
+						echo '<li>' . $op . '</li>';
+					endforeach;
+					echo '</ul>';
 					?>
 				</div>
 

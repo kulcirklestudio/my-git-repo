@@ -317,21 +317,21 @@ function render_create_git_branch_page()
 		<h2>All Branches</h2>
 
 		<?php foreach ($branches as $branch): ?>
-			<div
-				style="display:flex;justify-content:space-between;align-items:center;padding:12px;background:#fff;margin:8px 0;">
-				<strong>
+			<div class="git-branch-row">
+				<p class="git-branch-name" data-branch="<?php echo esc_html($branch); ?>">
 					<?php echo esc_html($branch); ?>
-				</strong>
+				</p>
 
-				<?php if (!in_array($branch, $protected_branches, true)): ?>
-					<button type="button" class="button button-secondary delete-branch"
-						data-branch="<?php echo esc_attr($branch); ?>">
-						Delete
+				<?php if (!in_array($branch, $protected_branches)) { ?>
+					<button type="button" name="delete_git_branch" class="button git-branch-delete"
+						data-branch="<?php echo esc_html($branch); ?>">
+						Delete Branch
 					</button>
-				<?php else: ?>
-					<em>Protected</em>
-				<?php endif; ?>
+				<?php } else { ?>
+					<span class="git-branch-protected">Protected branch</span>
+				<?php } ?>
 			</div>
+
 		<?php endforeach; ?>
 
 		<form method="post" id="deleteBranchForm">
@@ -349,5 +349,100 @@ function render_create_git_branch_page()
 			}
 		});
 	</script>
+	<style>
+		/* Container */
+		.list-all-branch {
+			background: #f6f7f7;
+			padding: 20px;
+			border-radius: 10px;
+			border: 1px solid #dcdcde;
+			margin-top: 20px;
+		}
+
+		/* Heading */
+		.list-all-branch h1 {
+			font-size: 22px;
+			text-align: center;
+			font-weight: 700;
+			margin-bottom: 20px;
+		}
+
+		/* Branch row */
+		.git-branch-row {
+			display: flex;
+			justify-content: space-between;
+			align-items: center;
+			gap: 16px;
+			background: #ffffff;
+			padding: 14px 18px;
+			border-left: 4px solid #2271b1;
+			border-radius: 6px;
+			margin-bottom: 12px;
+			transition: box-shadow 0.2s ease, transform 0.2s ease;
+		}
+
+		/* Hover effect */
+		.git-branch-row:hover {
+			box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+			transform: translateY(-1px);
+		}
+
+		/* Branch name */
+		.git-branch-name {
+			font-size: 15px;
+			font-weight: 600;
+			color: #1d2327;
+			margin: 0;
+			word-break: break-all;
+		}
+
+		/* Protected branch */
+		.git-branch-protected {
+			font-size: 13px;
+			font-weight: 600;
+			color: #8c8f94;
+		}
+
+		/* Delete button */
+		.git-branch-delete {
+			background: #d63638;
+			border-color: #d63638;
+			color: #fff;
+		}
+
+		.git-branch-delete:hover {
+			background: #b32d2e;
+			border-color: #b32d2e;
+		}
+
+		/* Success & error messages */
+		.git-notice {
+			padding: 12px 16px;
+			border-left: 4px solid;
+			background: #fff;
+			margin-top: 15px;
+			border-radius: 4px;
+		}
+
+		.git-notice.success {
+			border-color: #00a32a;
+		}
+
+		.git-notice.error {
+			border-color: #d63638;
+		}
+
+		/* Mobile-friendly */
+		@media (max-width: 600px) {
+			.git-branch-row {
+				flex-direction: column;
+				align-items: flex-start;
+			}
+
+			.git-branch-row button {
+				width: 100%;
+			}
+		}
+	</style>
 	<?php
 }

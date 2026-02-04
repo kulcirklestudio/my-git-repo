@@ -187,7 +187,8 @@ add_action('admin_menu', function () {
 	);
 });
 
-function render_create_git_branch_page() {
+function render_create_git_branch_page()
+{
 
 	if (!current_user_can('manage_options')) {
 		return;
@@ -262,18 +263,31 @@ function render_create_git_branch_page() {
 	// FETCH BRANCHES (ONCE)
 	// -----------------------------
 	$branches = [];
+	$output = [];
+	$status = 0;
+
 	$cmd = 'cd ' . escapeshellarg($repo_path)
 		. ' && git fetch origin --quiet'
-		. ' && git for-each-ref --format="%(refname:short)" refs/remotes/origin';
+		. ' && git branch -r';
 
 	exec($cmd . ' 2>&1', $output, $status);
 
 	if ($status === 0) {
 		foreach ($output as $line) {
 			$line = trim($line);
-			if ($line !== 'origin/HEAD') {
-				$branches[] = substr($line, 7); // remove origin/
+
+			// Skip HEAD pointer
+			if ($line === 'origin/HEAD -> origin/main') {
+				continue;
 			}
+
+			// Allow only origin branches
+			if (!preg_match('#^origin/[a-zA-Z0-9._\-/]+$#', $line)) {
+				continue;
+			}
+
+			// Remove "origin/"
+			$branches[] = substr($line, 7);
 		}
 	}
 
@@ -303,13 +317,14 @@ function render_create_git_branch_page() {
 		<h2>All Branches</h2>
 
 		<?php foreach ($branches as $branch): ?>
-			<div style="display:flex;justify-content:space-between;align-items:center;padding:12px;background:#fff;margin:8px 0;">
-				<strong><?php echo esc_html($branch); ?></strong>
+			<div
+				style="display:flex;justify-content:space-between;align-items:center;padding:12px;background:#fff;margin:8px 0;">
+				<strong>
+					<?php echo esc_html($branch); ?>
+				</strong>
 
 				<?php if (!in_array($branch, $protected_branches, true)): ?>
-					<button
-						type="button"
-						class="button button-secondary delete-branch"
+					<button type="button" class="button button-secondary delete-branch"
 						data-branch="<?php echo esc_attr($branch); ?>">
 						Delete
 					</button>

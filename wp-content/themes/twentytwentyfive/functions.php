@@ -274,14 +274,15 @@ function render_create_git_branch_page()
 
 			$cmd = implode(' && ', [
 				'cd ' . escapeshellarg($repo_path),
-				'git bundle create allbackup/Backup-Branch-' . escapeshellarg($branch) . '-$(date +%F).bundle ' . escapeshellarg($branch) . '',
+				'git bundle create allbackup/Backup-Branch-' . escapeshellarg($branch) . '-' . date('Y-m-d_H-i-s') . '.bundle ' . escapeshellarg($branch) . '',
 				'git checkout main',
 				'git branch -D ' . escapeshellarg($branch),
 				'git push origin --delete ' . escapeshellarg($branch),
 			]);
 
 			exec($cmd . ' 2>&1', $output, $status);
-
+			echo 'OUTPUT:' . print_r($output);
+			echo 'STATUS:' . $status;
 			$message = ($status === 0)
 				? "✅ Branch '{$branch}' deleted successfully."
 				: "❌ Error deleting branch:\n" . implode("\n", $output);
@@ -369,7 +370,7 @@ function render_create_git_branch_page()
 		</form>
 	</div>
 
-	<script>		document.addEventListener('click', function (e) {			if (e.target.classList.contains('git-branch-delete')) {				if (!confirm('This will delete the branch locally and remotely. Continue?')) return;				document.getElementById('delete_branch_input').value = e.target.dataset.branch;				document.getElementById('deleteBranchForm').submit();			}		});</script>
+	<script>		document.addEventListener('click', function (e) { if (e.target.classList.contains('git-branch-delete')) { if (!confirm('This will delete the branch locally and remotely. Continue?')) return; document.getElementById('delete_branch_input').value = e.target.dataset.branch; document.getElementById('deleteBranchForm').submit(); } });</script>
 	<style>
 		/* Container */
 		.list-all-branch {

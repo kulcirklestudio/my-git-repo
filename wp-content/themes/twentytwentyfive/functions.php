@@ -282,7 +282,7 @@ function render_create_git_branch_page()
 
 			exec($cmd . ' 2>&1', $output, $status);
 			$message = ($status === 0)
-				? "✅ Branch '{$branch}' deleted and backed-up successfully."
+				? "✅ Branch '{$branch}' deleted and backed-up successfully!!"
 				: "❌ Error deleting branch:\n" . implode("\n", $output);
 		}
 	}

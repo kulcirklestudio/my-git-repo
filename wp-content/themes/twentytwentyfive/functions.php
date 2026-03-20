@@ -193,7 +193,8 @@ function get_main_git_branch($repo_path)
 	$status = 0;
 
 	exec(
-		"cd " . escapeshellarg($repo_path) . " && git symbolic-ref --short refs/remotes/origin/HEAD 2>/dev/null", //2>/dev/null means if git shows error it wont be seen
+		"cd " . escapeshellarg($repo_path) . " && git symbolic-ref --short refs/remotes/origin/HEAD 2>/dev/null",
+		//2>/dev/null means if git shows error it wont be seen
 		$output,
 		$status
 	);
@@ -357,9 +358,16 @@ function render_create_git_branch_page()
 
 					exec($cmd . ' 2>&1', $output, $status);
 
-					echo '<ul>';
-					foreach ($output as $op):
-						echo '<li>' . $op . '</li>';
+					$counter = 0;
+					$length = count($output);
+
+					echo '<ul>'; foreach ($output as $op):
+
+						if ($counter == $length - 1) {
+							echo '<li>' . $op . '</li>';
+						}
+						$counter++;
+
 					endforeach;
 					echo '</ul>';
 					?>

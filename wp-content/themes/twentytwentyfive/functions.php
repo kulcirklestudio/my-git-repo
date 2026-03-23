@@ -246,8 +246,8 @@ function render_create_git_branch_page()
 			$cmd = implode(' && ', [
 				'cd ' . escapeshellarg($repo_path),
 				'git fetch origin --quiet',
-				'git checkout main',
-				'git pull origin main',
+				'git checkout ' . escapeshellarg($main_branch),
+				'git pull origin ' . escapeshellarg($main_branch),
 				'git checkout -b ' . escapeshellarg($branch),
 				'git push --set-upstream origin ' . escapeshellarg($branch),
 			]);

@@ -1,9 +1,4 @@
 <?php
-require_once plugin_dir_path(__FILE__) . 'includes/helper.php';
-require_once plugin_dir_path(__FILE__) . 'includes/actions.php';
-require_once plugin_dir_path(__FILE__) . 'includes/settings.php';
-require_once plugin_dir_path(__FILE__) . 'includes/ui.php';
-
 /*
 Plugin Name: Git Connect
 Plugin URI: https://example.com
@@ -15,6 +10,10 @@ License: GPLv2 or later
 Text Domain: git-connect-plugin
 */
 
+require_once plugin_dir_path(__FILE__) . 'includes/helper.php';
+require_once plugin_dir_path(__FILE__) . 'includes/actions.php';
+require_once plugin_dir_path(__FILE__) . 'includes/settings.php';
+require_once plugin_dir_path(__FILE__) . 'includes/ui.php';
 
 // ======================================
 // Load CSS for Only Plugin settings page

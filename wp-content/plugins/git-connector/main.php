@@ -2,7 +2,7 @@
 /*
 Plugin Name: Git Connect
 Plugin URI: https://example.com
-Description: Connect Your Local To GIT.
+Description: Manage your local Git repository directly from the WordPress admin. Create branches, commit changes, pull updates, and push code with a simple interface..
 Version: 1.0
 Author: Kuldeep Patel
 Author URI: https://example.com

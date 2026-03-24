@@ -67,7 +67,10 @@ function run_git_command($path, $command)
 
 add_action('admin_init', function () {
 
-    // COMMIT
+    if (!current_user_can('manage_options')) {
+        return;
+    }
+
     if (
         isset($_POST['git_commit']) &&
         isset($_POST['git_commit_nonce']) &&
@@ -79,6 +82,19 @@ add_action('admin_init', function () {
 
         if (!$path || !$message) {
             add_settings_error('git_plugin', 'commit_error', 'Missing path or commit message');
+            return;
+        }
+
+        if (!is_dir($path . '/.git')) {
+            add_settings_error('git_plugin', 'invalid_repo', 'Invalid Git repository');
+            return;
+        }
+
+        // Check if changes exist
+        $status_check = run_git_command($path, 'status --porcelain');
+
+        if (empty($status_check['output'])) {
+            add_settings_error('git_plugin', 'no_changes', 'No changes to commit');
             return;
         }
 

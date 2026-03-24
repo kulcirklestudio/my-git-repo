@@ -1,0 +1,151 @@
+.form-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.form-table tr {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  padding: 15px 0;
+}
+
+.form-table th {
+  flex: 0 0 200px;
+  text-align: left;
+  font-weight: 600;
+  font-size: 14px;
+  color: #1d2327;
+}
+
+.form-table td:first-of-type {
+  flex: 1;
+}
+
+.form-table td:last-of-type {
+  flex: 0 0 100%;
+}
+
+.form-table td {
+  margin-bottom: 0px;
+  padding: 0px;
+}
+
+.form-table td p {
+  padding: 0px;
+  margin: 0px;
+}
+
+/* Input Field */
+.form-table .regular-text {
+  width: 40%;
+  padding: 10px 14px;
+  font-size: 14px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  box-sizing: border-box;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.form-table .regular-text:focus {
+  outline: none;
+  border-color: #2271b1;
+  box-shadow: 0 0 0 3px rgba(34, 113, 177, 0.2);
+}
+
+/* Button */
+.form-table .button-primary {
+  padding: 12px 28px;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  color: #fff;
+  background: linear-gradient(135deg, #2271b1, #185a94);
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  box-shadow: 0 4px 10px rgba(34, 113, 177, 0.3);
+  transition: all 0.3s ease;
+}
+
+.form-table .button-primary:hover {
+  background: linear-gradient(135deg, #185a94, #0f4070);
+  box-shadow: 0 6px 16px rgba(34, 113, 177, 0.45);
+  transform: translateY(-2px);
+}
+
+.form-table .button-primary:active {
+  transform: translateY(0px);
+  box-shadow: 0 2px 6px rgba(34, 113, 177, 0.3);
+}
+
+/* Current Branch Wrapper */
+.current_branch_wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #fff;
+  padding: 15px 20px;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  margin: 15px 0;
+}
+
+/* Current Branch Info */
+.current-branch {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.current-branch p {
+  margin: 0;
+  font-size: 14px;
+}
+
+.current-branch p:first-child {
+  font-weight: 600;
+  color: #1d2327;
+}
+
+.current-branch p:last-child {
+  background: #e6f4ea;
+  color: #1a7f37;
+  padding: 4px 14px;
+  border-radius: 20px;
+  font-weight: 600;
+  font-size: 13px;
+}
+
+/* Test Repo Form */
+.test-repo-form {
+  margin: 0;
+}
+
+.test-repo-form .button-secondary {
+  padding: 10px 24px;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  color: #2271b1;
+  background: #fff;
+  border: 2px solid #2271b1;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 6px rgba(34, 113, 177, 0.15);
+}
+
+.test-repo-form .button-secondary:hover {
+  color: #fff;
+  background: linear-gradient(135deg, #2271b1, #185a94);
+  box-shadow: 0 6px 16px rgba(34, 113, 177, 0.35);
+  transform: translateY(-2px);
+}
+
+.test-repo-form .button-secondary:active {
+  transform: translateY(0px);
+  box-shadow: 0 2px 6px rgba(34, 113, 177, 0.2);
+}

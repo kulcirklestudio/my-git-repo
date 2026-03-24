@@ -204,7 +204,7 @@ function render_git_settings_page()
                 </form>
             </div>
 
-            <div class="create-branch">
+            <div class="create-branch repo-dd-wrapper">
                 <h2>Create Branch</h2>
 
                 <form method="post">

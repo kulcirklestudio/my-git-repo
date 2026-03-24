@@ -244,7 +244,7 @@ add_action('admin_init', function () {
     ) {
 
         $path = git_get_valid_repo_path();
-        $branch = sanitize_text_field($_POST['merge_branch']);
+        $branch = isset($_POST['merge_branch']) ? sanitize_text_field($_POST['merge_branch']) : '';
 
         if (!$path || !$branch)
             return;
@@ -254,7 +254,6 @@ add_action('admin_init', function () {
             return;
         }
 
-        // Merge selected branch into current branch
         $result = run_git_command($path, 'merge ' . escapeshellarg($branch));
 
         add_settings_error(

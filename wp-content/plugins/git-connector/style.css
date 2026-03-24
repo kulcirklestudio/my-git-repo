@@ -1,111 +1,319 @@
-/* Repository Dropdown Wrapper */
-.repo-dd-wrapper {
-  background: #ffffff;
-  border: 1px solid #d0d7de;
-  border-radius: 6px;
-  padding: 16px;
-  max-width: 100%;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial,
+/* ========================================
+   CSS Variables (for easy customization)
+======================================== */
+:root {
+  /* Colors */
+  --color-text-primary: #24292f;
+  --color-text-secondary: #57606a;
+  --color-text-placeholder: #8c959f;
+  --color-bg-primary: #ffffff;
+  --color-bg-secondary: #f6f8fa;
+  --color-border: #d0d7de;
+  --color-border-hover: #0969da;
+
+  /* Action Colors */
+  --color-success: #1f883d;
+  --color-success-hover: #1a7f37;
+  --color-success-active: #187733;
+  --color-success-bg: #dafbe1;
+  --color-primary: #0969da;
+  --color-primary-hover: #0860ca;
+  --color-primary-active: #0757ba;
+  --color-danger: #cf222e;
+  --color-danger-bg: #ffebe9;
+  --color-warning: #bf8700;
+  --color-warning-bg: #fff8c5;
+  --color-warning-text: #9a6700;
+
+  /* Typography */
+  --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial,
     sans-serif;
-  margin-bottom: 16px;
+  --font-family-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas,
+    "Liberation Mono", Monaco, monospace;
+  --font-size-sm: 12px;
+  --font-size-base: 14px;
+  --font-size-lg: 16px;
+
+  /* Spacing */
+  --spacing-xs: 4px;
+  --spacing-sm: 8px;
+  --spacing-md: 12px;
+  --spacing-lg: 16px;
+
+  /* Border Radius */
+  --radius-sm: 6px;
+  --radius-full: 50%;
+
+  /* Shadows */
+  --shadow-btn: 0 1px 0 rgba(27, 31, 36, 0.04);
+  --shadow-btn-hover: 0 1px 0 rgba(27, 31, 36, 0.1);
+  --shadow-focus: 0 0 0 3px rgba(9, 105, 218, 0.3);
 }
 
-.repo-dd-wrapper h2 {
-  margin: 0 0 16px 0;
-  font-size: 16px;
-  font-weight: 600;
-  color: #24292f;
-  padding-bottom: 8px;
-  border-bottom: 1px solid #d0d7de;
+/* ========================================
+     Base & Common Styles
+  ======================================== */
+
+/* Common Section Container */
+.repo-dd-wrapper,
+.form-table,
+.repo-status,
+.commit-section,
+.remote-info,
+.pull-section,
+.push-section {
+  background: var(--color-bg-primary);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  padding: var(--spacing-lg);
+  margin-bottom: var(--spacing-lg);
+  font-family: var(--font-family);
 }
 
-.repo-dd-wrapper form {
-  display: flex;
-  gap: 8px;
-  margin-bottom: 16px;
+.repo-dd-wrapper {
+  max-width: 100%;
 }
 
-.repo-dd-wrapper select[name="branch"] {
-  flex: 1;
-  padding: 5px 12px;
-  font-size: 14px;
-  line-height: 20px;
-  color: #24292f;
-  background-color: #f6f8fa;
-  border: 1px solid #d0d7de;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: border-color 0.2s, background-color 0.2s;
-}
-
-.repo-dd-wrapper select[name="branch"]:hover {
-  background-color: #ffffff;
-  border-color: #0969da;
-}
-
-.repo-dd-wrapper select[name="branch"]:focus {
-  outline: none;
-  border-color: #0969da;
-  box-shadow: 0 0 0 3px rgba(9, 105, 218, 0.3);
-  background-color: #ffffff;
-}
-
-.repo-dd-wrapper button[type="submit"] {
-  padding: 5px 16px;
-  font-size: 14px;
-  font-weight: 500;
-  line-height: 20px;
-  color: #ffffff;
-  background-color: #1f883d;
-  border: 1px solid rgba(27, 31, 36, 0.15);
-  border-radius: 6px;
-  cursor: pointer;
-  box-shadow: 0 1px 0 rgba(27, 31, 36, 0.04);
-  transition: background-color 0.2s;
-  white-space: nowrap;
-}
-
-.repo-dd-wrapper button[type="submit"]:hover {
-  background-color: #1a7f37;
-  box-shadow: 0 1px 0 rgba(27, 31, 36, 0.1);
-}
-
-.repo-dd-wrapper button[type="submit"]:active {
-  background-color: #187733;
-  box-shadow: inset 0 1px 0 rgba(0, 0, 0, 0.15);
-}
-
-.repo-dd-wrapper p {
-  margin: 0;
-  padding: 8px 12px;
-  background-color: #f6f8fa;
-  border: 1px solid #d0d7de;
-  border-radius: 6px;
-  font-size: 12px;
-  color: #57606a;
-  font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas,
-    monospace;
-}
-
-.repo-dd-wrapper p strong {
-  color: #24292f;
-  font-weight: 600;
-  margin-right: 8px;
-}
-
-/* Form Table */
 .form-table {
   width: 100%;
   border-collapse: collapse;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial,
-    sans-serif;
-  background: #ffffff;
-  border: 1px solid #d0d7de;
-  border-radius: 6px;
   overflow: hidden;
-  margin-bottom: 16px;
 }
 
+/* Common Section Headings */
+.repo-dd-wrapper h2,
+.repo-status h2,
+.commit-section h2,
+.remote-info h2,
+.pull-section h2,
+.push-section h2 {
+  margin: 0 0 var(--spacing-md) 0;
+  font-size: var(--font-size-lg);
+  font-weight: 600;
+  color: var(--color-text-primary);
+  padding-bottom: var(--spacing-sm);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.repo-dd-wrapper h2 {
+  margin-bottom: var(--spacing-lg);
+}
+
+/* Headings with Icons */
+.pull-section h2,
+.push-section h2 {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.pull-section h2::before,
+.push-section h2::before {
+  content: "";
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  background-size: contain;
+  background-repeat: no-repeat;
+}
+
+.pull-section h2::before {
+  background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="%2324292f"><path d="M4.72 3.22a.75.75 0 011.06 1.06L2.06 8l3.72 3.72a.75.75 0 11-1.06 1.06L.47 8.53a.75.75 0 010-1.06l4.25-4.25zm6.56 0a.75.75 0 10-1.06 1.06L13.94 8l-3.72 3.72a.75.75 0 101.06 1.06l4.25-4.25a.75.75 0 000-1.06l-4.25-4.25z"></path></svg>');
+}
+
+.push-section h2::before {
+  background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="%2324292f"><path d="M1.75 1A1.75 1.75 0 000 2.75v10.5C0 14.216.784 15 1.75 15h12.5A1.75 1.75 0 0016 13.25v-10.5A1.75 1.75 0 0014.25 1H1.75zM1.5 2.75a.25.25 0 01.25-.25h12.5a.25.25 0 01.25.25v10.5a.25.25 0 01-.25.25H1.75a.25.25 0 01-.25-.25V2.75zM8 4a.75.75 0 01.75.75v3.69l1.22-1.22a.75.75 0 111.06 1.06l-2.5 2.5a.75.75 0 01-1.06 0l-2.5-2.5a.75.75 0 111.06-1.06l1.22 1.22V4.75A.75.75 0 018 4z"></path></svg>');
+}
+
+/* Common Form Styles */
+.repo-dd-wrapper form,
+.pull-section form,
+.push-section form {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.repo-dd-wrapper form {
+  margin-bottom: var(--spacing-lg);
+  gap: var(--spacing-sm);
+}
+
+/* ========================================
+     Button Styles
+  ======================================== */
+
+/* Base Button Styles */
+.button-primary,
+.button-secondary,
+.repo-dd-wrapper button[type="submit"],
+.pull-section .button-primary,
+.push-section .button-primary,
+.current_branch_wrapper .button-secondary {
+  padding: 5px 16px;
+  font-size: var(--font-size-base);
+  font-weight: 500;
+  line-height: 20px;
+  border: 1px solid rgba(27, 31, 36, 0.15);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  box-shadow: var(--shadow-btn);
+  transition: background-color 0.2s ease, box-shadow 0.2s ease,
+    transform 0.1s ease;
+  white-space: nowrap;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Primary Button (Green - Success) */
+.repo-dd-wrapper button[type="submit"],
+.pull-section .button-primary {
+  color: #ffffff;
+  background-color: var(--color-success);
+}
+
+.repo-dd-wrapper button[type="submit"]:hover,
+.pull-section .button-primary:hover {
+  background-color: var(--color-success-hover);
+  box-shadow: var(--shadow-btn-hover), inset 0 1px 0 rgba(255, 255, 255, 0.03);
+}
+
+.repo-dd-wrapper button[type="submit"]:active,
+.pull-section .button-primary:active {
+  background-color: var(--color-success-active);
+  box-shadow: inset 0 1px 0 rgba(0, 0, 0, 0.15);
+}
+
+/* Primary Button (Blue) */
+.push-section .button-primary {
+  color: #ffffff;
+  background-color: var(--color-primary);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.push-section .button-primary:hover {
+  background-color: var(--color-primary-hover);
+  box-shadow: var(--shadow-btn-hover), inset 0 1px 0 rgba(255, 255, 255, 0.03);
+  transform: translateY(-1px);
+}
+
+.push-section .button-primary:active {
+  background-color: var(--color-primary-active);
+  box-shadow: inset 0 1px 0 rgba(0, 0, 0, 0.15);
+  transform: translateY(0);
+}
+
+/* Secondary Button */
+.button-secondary,
+.current_branch_wrapper .button-secondary {
+  color: var(--color-text-primary);
+  background-color: var(--color-bg-primary);
+}
+
+.button-secondary:hover,
+.current_branch_wrapper .button-secondary:hover {
+  background-color: #f3f4f6;
+  box-shadow: var(--shadow-btn-hover);
+}
+
+.button-secondary:active,
+.current_branch_wrapper .button-secondary:active {
+  background-color: #eaeef2;
+  box-shadow: inset 0 1px 0 rgba(0, 0, 0, 0.15);
+}
+
+/* Button Icons */
+.pull-section .button-primary::before {
+  content: "↓";
+  margin-right: 6px;
+  font-weight: bold;
+  font-size: 16px;
+}
+
+.push-section .button-primary::before {
+  content: "↑";
+  font-weight: bold;
+  font-size: 16px;
+}
+
+/* Button Focus States */
+.button-primary:focus-visible,
+.button-secondary:focus-visible,
+.repo-dd-wrapper button[type="submit"]:focus-visible,
+.pull-section .button-primary:focus-visible,
+.push-section .button-primary:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+/* Button Disabled States */
+.button-primary:disabled,
+.button-secondary:disabled,
+.pull-section .button-primary:disabled,
+.push-section .button-primary:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+  transform: none;
+}
+
+.pull-section .button-primary:disabled {
+  background-color: #94d3a2;
+}
+
+.push-section .button-primary:disabled {
+  background-color: #80ccff;
+}
+
+/* Button Loading State */
+.button-primary.loading,
+.button-secondary.loading,
+.pull-section .button-primary.loading,
+.push-section .button-primary.loading {
+  color: transparent;
+  pointer-events: none;
+}
+
+.button-primary.loading::before,
+.push-section .button-primary.loading::before {
+  content: "";
+}
+
+.button-primary.loading::after,
+.button-secondary.loading::after,
+.pull-section .button-primary.loading::after,
+.push-section .button-primary.loading::after {
+  content: "";
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  top: 50%;
+  left: 50%;
+  margin-left: -8px;
+  margin-top: -8px;
+  border: 2px solid currentColor;
+  border-radius: var(--radius-full);
+  border-top-color: transparent;
+  animation: spinner 0.6s linear infinite;
+}
+
+.button-primary.loading::after,
+.pull-section .button-primary.loading::after,
+.push-section .button-primary.loading::after {
+  border-color: #ffffff;
+  border-top-color: transparent;
+}
+
+.button-secondary.loading::after {
+  border-color: var(--color-text-primary);
+  border-top-color: transparent;
+}
+
+/* ========================================
+     Form Table
+  ======================================== */
 .form-table tbody {
   display: block;
 }
@@ -114,9 +322,9 @@
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 12px;
-  padding: 16px;
-  border-bottom: 1px solid #d0d7de;
+  gap: var(--spacing-md);
+  padding: var(--spacing-lg);
+  border-bottom: 1px solid var(--color-border);
 }
 
 .form-table tr:last-child {
@@ -127,221 +335,133 @@
   flex: 0 0 200px;
   text-align: left;
   font-weight: 600;
-  font-size: 14px;
-  color: #24292f;
+  font-size: var(--font-size-base);
+  color: var(--color-text-primary);
 }
 
 .form-table td {
   flex: 1;
-  margin-bottom: 0px;
-  padding: 0px;
+  margin-bottom: 0;
+  padding: 0;
 }
 
 .form-table td p {
-  padding: 0px;
-  margin: 0px;
-  font-size: 12px;
-  color: #57606a;
+  padding: 0;
+  margin: 0;
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
 }
 
-/* Input Field - GitHub Style */
+/* ========================================
+     Input & Select Styles
+  ======================================== */
+.form-table .regular-text,
+.repo-dd-wrapper select[name="branch"] {
+  padding: 5px 12px;
+  font-size: var(--font-size-base);
+  line-height: 20px;
+  color: var(--color-text-primary);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  box-sizing: border-box;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease,
+    background-color 0.2s ease;
+}
+
 .form-table .regular-text {
   width: 100%;
   max-width: 500px;
-  padding: 5px 12px;
-  font-size: 14px;
-  line-height: 20px;
-  color: #24292f;
-  background-color: #ffffff;
-  border: 1px solid #d0d7de;
-  border-radius: 6px;
-  box-sizing: border-box;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
-  font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas,
-    monospace;
+  background-color: var(--color-bg-primary);
+  font-family: var(--font-family-mono);
 }
 
-.form-table .regular-text:focus {
+.repo-dd-wrapper select[name="branch"] {
+  flex: 1;
+  background-color: var(--color-bg-secondary);
+  cursor: pointer;
+}
+
+.form-table .regular-text:hover,
+.repo-dd-wrapper select[name="branch"]:hover {
+  border-color: var(--color-border-hover);
+}
+
+.repo-dd-wrapper select[name="branch"]:hover {
+  background-color: var(--color-bg-primary);
+}
+
+.form-table .regular-text:focus,
+.repo-dd-wrapper select[name="branch"]:focus {
   outline: none;
-  border-color: #0969da;
-  box-shadow: 0 0 0 3px rgba(9, 105, 218, 0.3);
-  background-color: #ffffff;
-}
-
-.form-table .regular-text:hover {
-  border-color: #0969da;
+  border-color: var(--color-border-hover);
+  box-shadow: var(--shadow-focus);
+  background-color: var(--color-bg-primary);
 }
 
 .form-table .regular-text::placeholder {
-  color: #8c959f;
+  color: var(--color-text-placeholder);
 }
 
-/* Current Branch Wrapper */
+/* ========================================
+     Current Branch Wrapper
+  ======================================== */
 .current_branch_wrapper {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background: #f6f8fa;
-  padding: 16px;
-  border: 1px solid #d0d7de;
-  border-radius: 6px;
-  margin-bottom: 16px;
+  background: var(--color-bg-secondary);
+  padding: var(--spacing-lg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  margin-bottom: var(--spacing-lg);
 }
 
 .current_branch_wrapper p {
   margin: 0;
-  font-size: 14px;
-  color: #24292f;
+  font-size: var(--font-size-base);
+  color: var(--color-text-primary);
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--spacing-sm);
 }
 
 .current_branch_wrapper p strong {
   font-weight: 600;
-  color: #24292f;
+  color: var(--color-text-primary);
 }
 
 .current_branch_wrapper form {
   margin: 0;
 }
 
-.current_branch_wrapper .button-secondary {
-  padding: 5px 16px;
-  font-size: 14px;
-  font-weight: 500;
-  line-height: 20px;
-  color: #24292f;
-  background-color: #ffffff;
-  border: 1px solid rgba(27, 31, 36, 0.15);
-  border-radius: 6px;
-  cursor: pointer;
-  box-shadow: 0 1px 0 rgba(27, 31, 36, 0.04);
-  transition: background-color 0.08s ease, border-color 0.08s ease;
-  white-space: nowrap;
-}
+/* ========================================
+     Content Blocks (Status Messages, Pre, etc.)
+  ======================================== */
 
-.current_branch_wrapper .button-secondary:hover {
-  background-color: #f3f4f6;
-  border-color: rgba(27, 31, 36, 0.15);
-  box-shadow: 0 1px 0 rgba(27, 31, 36, 0.1);
-}
-
-.current_branch_wrapper .button-secondary:active {
-  background-color: #eaeef2;
-  box-shadow: inset 0 1px 0 rgba(0, 0, 0, 0.15);
-}
-
-/* Repository Status Section */
-.repo-status {
-  background: #ffffff;
-  border: 1px solid #d0d7de;
-  border-radius: 6px;
-  padding: 16px;
-  margin-bottom: 16px;
-}
-
-.repo-status h2 {
-  margin: 0 0 12px 0;
-  font-size: 16px;
-  font-weight: 600;
-  color: #24292f;
-  padding-bottom: 8px;
-  border-bottom: 1px solid #d0d7de;
-}
-
-.repo-status p {
+/* Code/Monospace Blocks */
+.repo-dd-wrapper p,
+.remote-info pre {
   margin: 0;
-  font-size: 14px;
-  padding: 12px;
-  border-radius: 6px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
+  padding: var(--spacing-sm) var(--spacing-md);
+  background-color: var(--color-bg-secondary);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  font-family: var(--font-family-mono);
 }
 
-.repo-status p[style*="green"] {
-  background-color: #dafbe1;
-  border: 1px solid #1f883d;
-  color: #1a7f37 !important;
-}
-
-.repo-status p strong {
+.repo-dd-wrapper p strong,
+.remote-info pre strong {
+  color: var(--color-text-primary);
   font-weight: 600;
-}
-
-/* Add icon-like indicator */
-.repo-status p[style*="green"]::before {
-  content: "✓";
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 20px;
-  height: 20px;
-  background-color: #1f883d;
-  color: #ffffff;
-  border-radius: 50%;
-  font-size: 12px;
-  font-weight: bold;
-}
-
-/* Commit Section */
-.commit-section {
-  background: #ffffff;
-  border: 1px solid #d0d7de;
-  border-radius: 6px;
-  padding: 16px;
-  margin-bottom: 16px;
-}
-
-.commit-section h2 {
-  margin: 0 0 12px 0;
-  font-size: 16px;
-  font-weight: 600;
-  color: #24292f;
-  padding-bottom: 8px;
-  border-bottom: 1px solid #d0d7de;
-}
-
-.commit-section p {
-  margin: 0;
-  font-size: 14px;
-  color: #57606a;
-  padding: 12px;
-  background-color: #f6f8fa;
-  border-radius: 6px;
-  border: 1px solid #d0d7de;
-}
-
-/* Remote Info Section */
-.remote-info {
-  background: #ffffff;
-  border: 1px solid #d0d7de;
-  border-radius: 6px;
-  padding: 16px;
-  margin-bottom: 16px;
-}
-
-.remote-info h2 {
-  margin: 0 0 12px 0;
-  font-size: 16px;
-  font-weight: 600;
-  color: #24292f;
-  padding-bottom: 8px;
-  border-bottom: 1px solid #d0d7de;
+  margin-right: var(--spacing-sm);
 }
 
 .remote-info pre {
-  margin: 0;
-  padding: 16px;
-  background-color: #f6f8fa;
-  border: 1px solid #d0d7de;
-  border-radius: 6px;
-  font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas,
-    "Liberation Mono", Monaco, monospace;
-  font-size: 12px;
+  padding: var(--spacing-lg);
   line-height: 1.6;
-  color: #24292f;
+  color: var(--color-text-primary);
   overflow-x: auto;
   white-space: pre-wrap;
   word-wrap: break-word;
@@ -349,202 +469,112 @@
 
 .remote-info pre::before {
   content: "📡";
-  margin-right: 8px;
+  margin-right: var(--spacing-sm);
 }
 
-/* Additional Status Variations */
+/* Info/Status Messages */
+.repo-status p,
+.commit-section p {
+  margin: 0;
+  font-size: var(--font-size-base);
+  padding: var(--spacing-md);
+  border-radius: var(--radius-sm);
+}
+
+.commit-section p {
+  color: var(--color-text-secondary);
+  background-color: var(--color-bg-secondary);
+  border: 1px solid var(--color-border);
+}
+
+.repo-status p {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.repo-status p strong {
+  font-weight: 600;
+}
+
+/* Status Icons */
+.repo-status p::before {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  color: #ffffff;
+  border-radius: var(--radius-full);
+  font-size: var(--font-size-sm);
+  font-weight: bold;
+  flex-shrink: 0;
+}
+
+/* Success Status */
+.repo-status p[style*="green"] {
+  background-color: var(--color-success-bg);
+  border: 1px solid var(--color-success);
+  color: var(--color-success-hover) !important;
+}
+
+.repo-status p[style*="green"]::before {
+  content: "✓";
+  background-color: var(--color-success);
+}
+
+/* Error Status */
 .repo-status p[style*="red"] {
-  background-color: #ffebe9;
-  border: 1px solid #cf222e;
-  color: #cf222e !important;
+  background-color: var(--color-danger-bg);
+  border: 1px solid var(--color-danger);
+  color: var(--color-danger) !important;
 }
 
 .repo-status p[style*="red"]::before {
   content: "✗";
-  background-color: #cf222e;
+  background-color: var(--color-danger);
 }
 
+/* Warning Status */
 .repo-status p[style*="orange"],
 .repo-status p[style*="yellow"] {
-  background-color: #fff8c5;
-  border: 1px solid #bf8700;
-  color: #9a6700 !important;
+  background-color: var(--color-warning-bg);
+  border: 1px solid var(--color-warning);
+  color: var(--color-warning-text) !important;
 }
 
 .repo-status p[style*="orange"]::before,
 .repo-status p[style*="yellow"]::before {
   content: "!";
-  background-color: #bf8700;
+  background-color: var(--color-warning);
 }
 
-/* Focus States for Accessibility */
-.button:focus-visible,
-.regular-text:focus-visible {
-  outline: 2px solid #0969da;
-  outline-offset: 2px;
-}
-
-/* Loading State (Optional) */
-.button-secondary.loading {
-  position: relative;
-  color: transparent;
-}
-
-.button-secondary.loading::after {
-  content: "";
-  position: absolute;
-  width: 16px;
-  height: 16px;
-  top: 50%;
-  left: 50%;
-  margin-left: -8px;
-  margin-top: -8px;
-  border: 2px solid #24292f;
-  border-radius: 50%;
-  border-top-color: transparent;
-  animation: spinner 0.6s linear infinite;
-}
-
-@keyframes spinner {
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-/* Enhanced Pre Code Block */
+/* ========================================
+     Scrollbar Styles
+  ======================================== */
 .remote-info pre::-webkit-scrollbar {
   height: 8px;
 }
 
 .remote-info pre::-webkit-scrollbar-track {
-  background: #f6f8fa;
-  border-radius: 4px;
+  background: var(--color-bg-secondary);
+  border-radius: var(--spacing-xs);
 }
 
 .remote-info pre::-webkit-scrollbar-thumb {
-  background: #d0d7de;
-  border-radius: 4px;
+  background: var(--color-border);
+  border-radius: var(--spacing-xs);
 }
 
 .remote-info pre::-webkit-scrollbar-thumb:hover {
   background: #afb8c1;
 }
 
-/* Pull Section */
-.pull-section {
-  background: #ffffff;
-  border: 1px solid #d0d7de;
-  border-radius: 6px;
-  padding: 16px;
-  margin-bottom: 16px;
-}
-
-.pull-section h2 {
-  margin: 0 0 12px 0;
-  font-size: 16px;
-  font-weight: 600;
-  color: #24292f;
-  padding-bottom: 8px;
-  border-bottom: 1px solid #d0d7de;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-/* Add download icon to heading */
-.pull-section h2::before {
-  content: "";
-  display: inline-block;
-  width: 16px;
-  height: 16px;
-  background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="%2324292f"><path d="M4.72 3.22a.75.75 0 011.06 1.06L2.06 8l3.72 3.72a.75.75 0 11-1.06 1.06L.47 8.53a.75.75 0 010-1.06l4.25-4.25zm6.56 0a.75.75 0 10-1.06 1.06L13.94 8l-3.72 3.72a.75.75 0 101.06 1.06l4.25-4.25a.75.75 0 000-1.06l-4.25-4.25z"></path></svg>');
-  background-size: contain;
-  background-repeat: no-repeat;
-}
-
-.pull-section form {
-  margin: 0;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.pull-section .button-primary {
-  padding: 5px 16px;
-  font-size: 14px;
-  font-weight: 500;
-  line-height: 20px;
-  color: #ffffff;
-  background-color: #1f883d;
-  border: 1px solid rgba(27, 31, 36, 0.15);
-  border-radius: 6px;
-  cursor: pointer;
-  box-shadow: 0 1px 0 rgba(27, 31, 36, 0.04);
-  transition: background-color 0.2s ease, box-shadow 0.2s ease,
-    transform 0.1s ease;
-  position: relative;
-  overflow: hidden;
-}
-
-.pull-section .button-primary::before {
-  content: "↓";
-  margin-right: 6px;
-  font-weight: bold;
-  font-size: 16px;
-}
-
-.pull-section .button-primary:hover {
-  background-color: #1a7f37;
-  box-shadow: 0 1px 0 rgba(27, 31, 36, 0.1),
-    inset 0 1px 0 rgba(255, 255, 255, 0.03);
-}
-
-.pull-section .button-primary:active {
-  background-color: #187733;
-  box-shadow: inset 0 1px 0 rgba(0, 0, 0, 0.15);
-  transform: scale(0.98);
-}
-
-.pull-section .button-primary:focus-visible {
-  outline: 2px solid #0969da;
-  outline-offset: 2px;
-}
-
-/* Loading State */
-.pull-section .button-primary.loading {
-  color: transparent;
-  pointer-events: none;
-}
-
-.pull-section .button-primary.loading::after {
-  content: "";
-  position: absolute;
-  width: 16px;
-  height: 16px;
-  top: 50%;
-  left: 50%;
-  margin-left: -8px;
-  margin-top: -8px;
-  border: 2px solid #ffffff;
-  border-radius: 50%;
-  border-top-color: transparent;
-  animation: spinner 0.6s linear infinite;
-}
-
+/* ========================================
+     Animation
+  ======================================== */
 @keyframes spinner {
   to {
     transform: rotate(360deg);
   }
-}
-
-/* Disabled State */
-.pull-section .button-primary:disabled {
-  background-color: #94d3a2;
-  cursor: not-allowed;
-  opacity: 0.6;
-}
-
-.pull-section .button-primary:disabled:hover {
-  background-color: #94d3a2;
-  box-shadow: 0 1px 0 rgba(27, 31, 36, 0.04);
 }

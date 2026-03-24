@@ -199,11 +199,7 @@ function render_git_settings_page()
         </div>
         <?php if (!empty($path)): ?>
 
-            <h2>Repository Info</h2>
-
-            <p><strong>Current Branch:</strong>
-                <?php echo esc_html($current_branch); ?>
-            </p>
+            <h2>Repository Drop Down</h2>
 
             <form method="post">
                 <?php wp_nonce_field('select_branch_action', 'select_branch_nonce'); ?>

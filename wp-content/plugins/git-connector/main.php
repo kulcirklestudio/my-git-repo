@@ -109,6 +109,54 @@ add_action('admin_init', function () {
         );
     }
 
+    // ======================
+// PULL
+// ======================
+    if (
+        isset($_POST['git_pull']) &&
+        isset($_POST['git_pull_nonce']) &&
+        wp_verify_nonce($_POST['git_pull_nonce'], 'git_pull_action')
+    ) {
+
+        $path = get_option('git_plugin_local_path');
+
+        if (!$path) {
+            add_settings_error('git_plugin', 'pull_error', 'No path set');
+            return;
+        }
+
+        if (!is_dir($path . '/.git')) {
+            add_settings_error('git_plugin', 'invalid_repo', 'Invalid Git repository');
+            return;
+        }
+
+        // 🔴 Block if uncommitted changes exist
+        $status_check = run_git_command($path, 'status --porcelain');
+
+        if (!empty($status_check['output'])) {
+            add_settings_error('git_plugin', 'dirty_repo', 'Uncommitted changes exist. Commit before pulling.');
+            return;
+        }
+
+        // 🔴 Check remote exists
+        $remote_check = run_git_command($path, 'remote');
+
+        if (empty($remote_check['output'])) {
+            add_settings_error('git_plugin', 'no_remote', 'No remote repository connected');
+            return;
+        }
+
+        // ✅ Safe pull
+        $result = run_git_command($path, 'pull');
+
+        add_settings_error(
+            'git_plugin',
+            'pull_result',
+            implode("\n", $result['output']),
+            $result['status'] === 0 ? 'updated' : 'error'
+        );
+    }
+
 });
 
 function validate_git_path($path)
@@ -287,6 +335,18 @@ function render_git_settings_page()
                         </button>
                     </form>
                 <?php endif; ?>
+            </div>
+
+            <div class="pull-section">
+                <h2>Pull Latest Changes</h2>
+
+                <form method="post">
+                    <?php wp_nonce_field('git_pull_action', 'git_pull_nonce'); ?>
+
+                    <button type="submit" name="git_pull" class="button button-primary">
+                        Pull from Remote
+                    </button>
+                </form>
             </div>
 
             <!-- BRANCH SWITCH -->

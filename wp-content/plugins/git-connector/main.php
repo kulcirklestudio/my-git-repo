@@ -65,40 +65,62 @@ function run_git_command($path, $command)
     ];
 }
 
+function git_get_valid_repo_path()
+{
+    $path = get_option('git_plugin_local_path');
+
+    if (!$path) {
+        add_settings_error('git_plugin', 'no_path', 'No path set');
+        return false;
+    }
+
+    if (!is_dir($path . '/.git')) {
+        add_settings_error('git_plugin', 'invalid_repo', 'Invalid Git repository');
+        return false;
+    }
+
+    return $path;
+}
+
+function git_is_repo_clean($path)
+{
+    $status = run_git_command($path, 'status --porcelain');
+    return empty($status['output']);
+}
+
+function git_has_remote($path)
+{
+    $remote = run_git_command($path, 'remote');
+    return !empty($remote['output']);
+}
+
 add_action('admin_init', function () {
 
     if (!current_user_can('manage_options')) {
         return;
     }
 
+    // ======================
+    // COMMIT
+    // ======================
     if (
         isset($_POST['git_commit']) &&
-        isset($_POST['git_commit_nonce']) &&
         wp_verify_nonce($_POST['git_commit_nonce'], 'git_commit_action')
     ) {
 
-        $path = get_option('git_plugin_local_path');
+        $path = git_get_valid_repo_path();
         $message = sanitize_text_field($_POST['commit_message']);
 
-        if (!$path || !$message) {
-            add_settings_error('git_plugin', 'commit_error', 'Missing path or commit message');
+        if (!$path || !$message)
             return;
-        }
 
-        if (!is_dir($path . '/.git')) {
-            add_settings_error('git_plugin', 'invalid_repo', 'Invalid Git repository');
-            return;
-        }
-
-        // Check if changes exist
-        $status_check = run_git_command($path, 'status --porcelain');
-
-        if (empty($status_check['output'])) {
+        if (!git_is_repo_clean($path)) {
+            run_git_command($path, 'add .');
+        } else {
             add_settings_error('git_plugin', 'no_changes', 'No changes to commit');
             return;
         }
 
-        run_git_command($path, 'add .');
         $result = run_git_command($path, 'commit -m ' . escapeshellarg($message));
 
         add_settings_error(
@@ -114,47 +136,26 @@ add_action('admin_init', function () {
     // ======================
     if (
         isset($_POST['git_pull']) &&
-        isset($_POST['git_pull_nonce']) &&
         wp_verify_nonce($_POST['git_pull_nonce'], 'git_pull_action')
     ) {
 
-        $path = get_option('git_plugin_local_path');
+        $path = git_get_valid_repo_path();
+        if (!$path)
+            return;
 
-        if (!$path) {
-            add_settings_error('git_plugin', 'pull_error', 'No path set');
+        if (!git_is_repo_clean($path)) {
+            add_settings_error('git_plugin', 'dirty_repo', 'Commit changes before pulling');
             return;
         }
 
-        if (!is_dir($path . '/.git')) {
-            add_settings_error('git_plugin', 'invalid_repo', 'Invalid Git repository');
-            return;
-        }
-
-        // 🔴 Block if uncommitted changes exist
-        $status_check = run_git_command($path, 'status --porcelain');
-
-        if (!empty($status_check['output'])) {
-            add_settings_error('git_plugin', 'dirty_repo', 'Uncommitted changes exist. Commit before pulling.');
-            return;
-        }
-
-        // 🔴 Check remote exists
-        $remote_check = run_git_command($path, 'remote');
-
-        if (empty($remote_check['output'])) {
+        if (!git_has_remote($path)) {
             add_settings_error('git_plugin', 'no_remote', 'No remote repository connected');
             return;
         }
 
-        // ✅ Safe pull
         $result = run_git_command($path, 'pull');
 
-        add_settings_error(
-            'git_plugin',
-            'pull_result',
-            implode("\n", $result['output']),
-            $result['status'] === 0 ? 'updated' : 'error'
-        );
+        add_settings_error('git_plugin', 'pull_result', implode("\n", $result['output']), $result['status'] === 0 ? 'updated' : 'error');
     }
 
     // ======================
@@ -162,77 +163,47 @@ add_action('admin_init', function () {
     // ======================
     if (
         isset($_POST['git_push']) &&
-        isset($_POST['git_push_nonce']) &&
         wp_verify_nonce($_POST['git_push_nonce'], 'git_push_action')
     ) {
 
-        $path = get_option('git_plugin_local_path');
+        $path = git_get_valid_repo_path();
+        if (!$path)
+            return;
 
-        if (!$path) {
-            add_settings_error('git_plugin', 'push_error', 'No path set');
+        if (!git_is_repo_clean($path)) {
+            add_settings_error('git_plugin', 'dirty_repo', 'Commit changes before pushing');
             return;
         }
 
-        if (!is_dir($path . '/.git')) {
-            add_settings_error('git_plugin', 'invalid_repo', 'Invalid Git repository');
-            return;
-        }
-
-        // 🔴 Block if uncommitted changes exist
-        $status_check = run_git_command($path, 'status --porcelain');
-
-        if (!empty($status_check['output'])) {
-            add_settings_error('git_plugin', 'dirty_repo', 'Uncommitted changes exist. Commit before pushing.');
-            return;
-        }
-
-        // 🔴 Check remote exists
-        $remote_check = run_git_command($path, 'remote');
-
-        if (empty($remote_check['output'])) {
+        if (!git_has_remote($path)) {
             add_settings_error('git_plugin', 'no_remote', 'No remote repository connected');
             return;
         }
 
-        // ✅ Push
         $result = run_git_command($path, 'push');
 
-        add_settings_error(
-            'git_plugin',
-            'push_result',
-            implode("\n", $result['output']),
-            $result['status'] === 0 ? 'updated' : 'error'
-        );
+        add_settings_error('git_plugin', 'push_result', implode("\n", $result['output']), $result['status'] === 0 ? 'updated' : 'error');
     }
 
+    // ======================
+    // CREATE BRANCH
+    // ======================
     if (
         isset($_POST['git_create_branch']) &&
-        isset($_POST['git_create_branch_nonce']) &&
         wp_verify_nonce($_POST['git_create_branch_nonce'], 'git_create_branch_action')
     ) {
 
-        $path = get_option('git_plugin_local_path');
+        $path = git_get_valid_repo_path();
         $branch = sanitize_text_field($_POST['new_branch']);
 
-        if (!$path || !$branch) {
-            add_settings_error('git_plugin', 'branch_error', 'Missing path or branch name');
+        if (!$path || !$branch)
+            return;
+
+        if (!git_is_repo_clean($path)) {
+            add_settings_error('git_plugin', 'dirty_repo', 'Commit before creating branch');
             return;
         }
 
-        if (!is_dir($path . '/.git')) {
-            add_settings_error('git_plugin', 'invalid_repo', 'Invalid Git repository');
-            return;
-        }
-
-        // 🔴 Block if dirty
-        $status_check = run_git_command($path, 'status --porcelain');
-
-        if (!empty($status_check['output'])) {
-            add_settings_error('git_plugin', 'dirty_repo', 'Commit changes before creating branch');
-            return;
-        }
-
-        // 🔴 Check if branch already exists
         $branches = run_git_command($path, 'branch --format="%(refname:short)"');
 
         if (in_array($branch, $branches['output'])) {
@@ -240,15 +211,9 @@ add_action('admin_init', function () {
             return;
         }
 
-        // ✅ Create branch
         $result = run_git_command($path, 'checkout -b ' . escapeshellarg($branch));
 
-        add_settings_error(
-            'git_plugin',
-            'branch_result',
-            implode("\n", $result['output']),
-            $result['status'] === 0 ? 'updated' : 'error'
-        );
+        add_settings_error('git_plugin', 'branch_result', implode("\n", $result['output']), $result['status'] === 0 ? 'updated' : 'error');
     }
 
 });

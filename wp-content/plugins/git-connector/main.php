@@ -205,6 +205,52 @@ add_action('admin_init', function () {
         );
     }
 
+    if (
+        isset($_POST['git_create_branch']) &&
+        isset($_POST['git_create_branch_nonce']) &&
+        wp_verify_nonce($_POST['git_create_branch_nonce'], 'git_create_branch_action')
+    ) {
+
+        $path = get_option('git_plugin_local_path');
+        $branch = sanitize_text_field($_POST['new_branch']);
+
+        if (!$path || !$branch) {
+            add_settings_error('git_plugin', 'branch_error', 'Missing path or branch name');
+            return;
+        }
+
+        if (!is_dir($path . '/.git')) {
+            add_settings_error('git_plugin', 'invalid_repo', 'Invalid Git repository');
+            return;
+        }
+
+        // 🔴 Block if dirty
+        $status_check = run_git_command($path, 'status --porcelain');
+
+        if (!empty($status_check['output'])) {
+            add_settings_error('git_plugin', 'dirty_repo', 'Commit changes before creating branch');
+            return;
+        }
+
+        // 🔴 Check if branch already exists
+        $branches = run_git_command($path, 'branch --format="%(refname:short)"');
+
+        if (in_array($branch, $branches['output'])) {
+            add_settings_error('git_plugin', 'branch_exists', 'Branch already exists');
+            return;
+        }
+
+        // ✅ Create branch
+        $result = run_git_command($path, 'checkout -b ' . escapeshellarg($branch));
+
+        add_settings_error(
+            'git_plugin',
+            'branch_result',
+            implode("\n", $result['output']),
+            $result['status'] === 0 ? 'updated' : 'error'
+        );
+    }
+
 });
 
 function validate_git_path($path)
@@ -428,6 +474,20 @@ function render_git_settings_page()
 
                     <button type="submit" name="switch_branch" class="button">
                         Switch Branch
+                    </button>
+                </form>
+            </div>
+
+            <div class="create-branch">
+                <h2>Create Branch</h2>
+
+                <form method="post">
+                    <?php wp_nonce_field('git_create_branch_action', 'git_create_branch_nonce'); ?>
+
+                    <input type="text" name="new_branch" placeholder="Enter branch name" required>
+
+                    <button type="submit" name="git_create_branch" class="button button-primary">
+                        Create & Switch
                     </button>
                 </form>
             </div>

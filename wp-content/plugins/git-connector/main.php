@@ -343,9 +343,11 @@ function render_git_settings_page()
 
             <!-- CURRENT BRANCH + TEST -->
             <div class="current_branch_wrapper">
-                <p><strong>Current Branch:</strong>
-                    <?php echo esc_html($current_branch); ?>
-                </p>
+                <div><strong>Current Branch:</strong>
+                    <p class="active_branch">
+                        <?php echo esc_html($current_branch); ?>
+                    </p>
+                </div>
 
                 <form method="post">
                     <?php wp_nonce_field('test_git_repo_action', 'test_git_repo_nonce'); ?>

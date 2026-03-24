@@ -110,8 +110,8 @@ add_action('admin_init', function () {
     }
 
     // ======================
-// PULL
-// ======================
+    // PULL
+    // ======================
     if (
         isset($_POST['git_pull']) &&
         isset($_POST['git_pull_nonce']) &&
@@ -152,6 +152,54 @@ add_action('admin_init', function () {
         add_settings_error(
             'git_plugin',
             'pull_result',
+            implode("\n", $result['output']),
+            $result['status'] === 0 ? 'updated' : 'error'
+        );
+    }
+
+    // ======================
+    // PUSH
+    // ======================
+    if (
+        isset($_POST['git_push']) &&
+        isset($_POST['git_push_nonce']) &&
+        wp_verify_nonce($_POST['git_push_nonce'], 'git_push_action')
+    ) {
+
+        $path = get_option('git_plugin_local_path');
+
+        if (!$path) {
+            add_settings_error('git_plugin', 'push_error', 'No path set');
+            return;
+        }
+
+        if (!is_dir($path . '/.git')) {
+            add_settings_error('git_plugin', 'invalid_repo', 'Invalid Git repository');
+            return;
+        }
+
+        // 🔴 Block if uncommitted changes exist
+        $status_check = run_git_command($path, 'status --porcelain');
+
+        if (!empty($status_check['output'])) {
+            add_settings_error('git_plugin', 'dirty_repo', 'Uncommitted changes exist. Commit before pushing.');
+            return;
+        }
+
+        // 🔴 Check remote exists
+        $remote_check = run_git_command($path, 'remote');
+
+        if (empty($remote_check['output'])) {
+            add_settings_error('git_plugin', 'no_remote', 'No remote repository connected');
+            return;
+        }
+
+        // ✅ Push
+        $result = run_git_command($path, 'push');
+
+        add_settings_error(
+            'git_plugin',
+            'push_result',
             implode("\n", $result['output']),
             $result['status'] === 0 ? 'updated' : 'error'
         );
@@ -345,6 +393,18 @@ function render_git_settings_page()
 
                     <button type="submit" name="git_pull" class="button button-primary">
                         Pull from Remote
+                    </button>
+                </form>
+            </div>
+
+            <div class="push-section">
+                <h2>Push Changes</h2>
+
+                <form method="post">
+                    <?php wp_nonce_field('git_push_action', 'git_push_nonce'); ?>
+
+                    <button type="submit" name="git_push" class="button button-primary">
+                        Push to Remote
                     </button>
                 </form>
             </div>

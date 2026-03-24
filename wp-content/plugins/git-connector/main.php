@@ -234,6 +234,36 @@ add_action('admin_init', function () {
         add_settings_error('git_plugin', 'branch_result', implode("\n", $result['output']), $result['status'] === 0 ? 'updated' : 'error');
     }
 
+    // ======================
+    // MERGE BRANCH
+    // ======================
+    if (
+        isset($_POST['git_merge_branch']) &&
+        wp_verify_nonce($_POST['git_merge_branch_nonce'], 'git_merge_branch_action')
+    ) {
+
+        $path = git_get_valid_repo_path();
+        $branch = sanitize_text_field($_POST['merge_branch']);
+
+        if (!$path || !$branch)
+            return;
+
+        if (!git_is_repo_clean($path)) {
+            add_settings_error('git_plugin', 'dirty_repo', 'Commit changes before merging');
+            return;
+        }
+
+        // Merge selected branch into current branch
+        $result = run_git_command($path, 'merge ' . escapeshellarg($branch));
+
+        add_settings_error(
+            'git_plugin',
+            'merge_result',
+            implode("\n", $result['output']),
+            $result['status'] === 0 ? 'updated' : 'error'
+        );
+    }
+
 });
 
 function validate_git_path($path)
@@ -457,6 +487,28 @@ function render_git_settings_page()
 
                     <button type="submit" name="switch_branch" class="button">
                         Switch Branch
+                    </button>
+                </form>
+            </div>
+
+            <div class="merge-branch">
+                <h2>Merge Branch</h2>
+
+                <form method="post">
+                    <?php wp_nonce_field('git_merge_branch_action', 'git_merge_branch_nonce'); ?>
+
+                    <select name="merge_branch">
+                        <?php foreach ($branches as $branch): ?>
+                            <?php if ($branch !== $current_branch): ?>
+                                <option value="<?php echo esc_attr($branch); ?>">
+                                    <?php echo esc_html($branch); ?>
+                                </option>
+                            <?php endif; ?>
+                        <?php endforeach; ?>
+                    </select>
+
+                    <button type="submit" name="git_merge_branch" class="button button-primary">
+                        Merge into Current Branch
                     </button>
                 </form>
             </div>

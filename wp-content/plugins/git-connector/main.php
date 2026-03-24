@@ -180,7 +180,25 @@ add_action('admin_init', function () {
             return;
         }
 
-        $result = run_git_command($path, 'push');
+        // Get current branch
+        $current_branch = run_git_command($path, 'branch --show-current');
+        $branch = $current_branch['output'][0] ?? '';
+
+        if (!$branch) {
+            add_settings_error('git_plugin', 'no_branch', 'Could not detect current branch');
+            return;
+        }
+
+        // Check if upstream exists
+        $upstream_check = run_git_command($path, 'rev-parse --abbrev-ref --symbolic-full-name @{u}');
+
+        if ($upstream_check['status'] !== 0) {
+            // First push (no upstream)
+            $result = run_git_command($path, 'push -u origin ' . escapeshellarg($branch));
+        } else {
+            // Normal push
+            $result = run_git_command($path, 'push');
+        }
 
         add_settings_error('git_plugin', 'push_result', implode("\n", $result['output']), $result['status'] === 0 ? 'updated' : 'error');
     }

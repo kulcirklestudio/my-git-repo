@@ -1,151 +1,313 @@
+/* Form Table */
 .form-table {
-  width: 100%;
-  border-collapse: collapse;
-}
+    width: 100%;
+    border-collapse: collapse;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+  }
 
-.form-table tr {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 10px;
-  padding: 15px 0;
-}
+  .form-table tr {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 12px;
+    padding: 16px 0;
+    border-bottom: 1px solid #d0d7de;
+  }
 
-.form-table th {
-  flex: 0 0 200px;
-  text-align: left;
-  font-weight: 600;
-  font-size: 14px;
-  color: #1d2327;
-}
+  .form-table tr:last-child {
+    border-bottom: none;
+  }
 
-.form-table td:first-of-type {
-  flex: 1;
-}
+  .form-table th {
+    flex: 0 0 200px;
+    text-align: left;
+    font-weight: 600;
+    font-size: 14px;
+    color: #24292f;
+  }
 
-.form-table td:last-of-type {
-  flex: 0 0 100%;
-}
+  .form-table td:first-of-type {
+    flex: 1;
+  }
 
-.form-table td {
-  margin-bottom: 0px;
-  padding: 0px;
-}
+  .form-table td:last-of-type {
+    flex: 0 0 100%;
+  }
 
-.form-table td p {
-  padding: 0px;
-  margin: 0px;
-}
+  .form-table td {
+    margin-bottom: 0px;
+    padding: 0px;
+  }
 
-/* Input Field */
-.form-table .regular-text {
-  width: 40%;
-  padding: 10px 14px;
-  font-size: 14px;
-  border: 1px solid #ccc;
-  border-radius: 6px;
-  box-sizing: border-box;
-  transition: border-color 0.3s ease, box-shadow 0.3s ease;
-}
+  .form-table td p {
+    padding: 0px;
+    margin: 0px;
+    font-size: 12px;
+    color: #57606a;
+  }
 
-.form-table .regular-text:focus {
-  outline: none;
-  border-color: #2271b1;
-  box-shadow: 0 0 0 3px rgba(34, 113, 177, 0.2);
-}
+  /* Input Field - GitHub Style */
+  .form-table .regular-text {
+    width: 40%;
+    min-width: 300px;
+    padding: 5px 12px;
+    font-size: 14px;
+    line-height: 20px;
+    color: #24292f;
+    background-color: #ffffff;
+    border: 1px solid #d0d7de;
+    border-radius: 6px;
+    box-sizing: border-box;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  }
 
-/* Button */
-.form-table .button-primary {
-  padding: 12px 28px;
-  font-size: 14px;
-  font-weight: 600;
-  letter-spacing: 0.5px;
-  color: #fff;
-  background: linear-gradient(135deg, #2271b1, #185a94);
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  box-shadow: 0 4px 10px rgba(34, 113, 177, 0.3);
-  transition: all 0.3s ease;
-}
+  .form-table .regular-text:focus {
+    outline: none;
+    border-color: #0969da;
+    box-shadow: 0 0 0 3px rgba(9, 105, 218, 0.3);
+    background-color: #ffffff;
+  }
 
-.form-table .button-primary:hover {
-  background: linear-gradient(135deg, #185a94, #0f4070);
-  box-shadow: 0 6px 16px rgba(34, 113, 177, 0.45);
-  transform: translateY(-2px);
-}
+  .form-table .regular-text:hover {
+    border-color: #0969da;
+  }
 
-.form-table .button-primary:active {
-  transform: translateY(0px);
-  box-shadow: 0 2px 6px rgba(34, 113, 177, 0.3);
-}
+  /* Primary Button - GitHub Green Style */
+  .form-table .button-primary {
+    padding: 5px 16px;
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 20px;
+    color: #ffffff;
+    background-color: #1f883d;
+    border: 1px solid rgba(27, 31, 36, 0.15);
+    border-radius: 6px;
+    cursor: pointer;
+    box-shadow: 0 1px 0 rgba(27, 31, 36, 0.04);
+    transition: background-color 0.2s ease, box-shadow 0.2s ease;
+  }
 
-/* Current Branch Wrapper */
-.current_branch_wrapper {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  background: #fff;
-  padding: 15px 20px;
-  border: 1px solid #ddd;
-  border-radius: 10px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-  margin: 15px 0;
-}
+  .form-table .button-primary:hover {
+    background-color: #1a7f37;
+    box-shadow: 0 1px 0 rgba(27, 31, 36, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.03);
+  }
 
-/* Current Branch Info */
-.current-branch {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
+  .form-table .button-primary:active {
+    background-color: #187733;
+    box-shadow: inset 0 1px 0 rgba(0, 0, 0, 0.15);
+    transform: translateY(0px);
+  }
 
-.current-branch p {
-  margin: 0;
-  font-size: 14px;
-}
+  /* Current Branch Wrapper - GitHub Style */
+  .current_branch_wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: #f6f8fa;
+    padding: 16px;
+    border: 1px solid #d0d7de;
+    border-radius: 6px;
+    margin: 16px 0;
+  }
 
-.current-branch p:first-child {
-  font-weight: 600;
-  color: #1d2327;
-}
+  /* Current Branch Info */
+  .current-branch {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
 
-.current-branch p:last-child {
-  background: #e6f4ea;
-  color: #1a7f37;
-  padding: 4px 14px;
-  border-radius: 20px;
-  font-weight: 600;
-  font-size: 13px;
-}
+  .current-branch p {
+    margin: 0;
+    font-size: 14px;
+    color: #24292f;
+  }
 
-/* Test Repo Form */
-.test-repo-form {
-  margin: 0;
-}
+  .current-branch p:first-child {
+    font-weight: 600;
+    color: #24292f;
+  }
 
-.test-repo-form .button-secondary {
-  padding: 10px 24px;
-  font-size: 14px;
-  font-weight: 600;
-  letter-spacing: 0.5px;
-  color: #2271b1;
-  background: #fff;
-  border: 2px solid #2271b1;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow: 0 2px 6px rgba(34, 113, 177, 0.15);
-}
+  .current-branch p:last-child {
+    background: #dafbe1;
+    color: #1a7f37;
+    padding: 4px 12px;
+    border-radius: 24px;
+    font-weight: 500;
+    font-size: 12px;
+    border: 1px solid rgba(27, 31, 36, 0.15);
+  }
 
-.test-repo-form .button-secondary:hover {
-  color: #fff;
-  background: linear-gradient(135deg, #2271b1, #185a94);
-  box-shadow: 0 6px 16px rgba(34, 113, 177, 0.35);
-  transform: translateY(-2px);
-}
+  /* Test Repo Form - GitHub Secondary Button */
+  .test-repo-form {
+    margin: 0;
+  }
 
-.test-repo-form .button-secondary:active {
-  transform: translateY(0px);
-  box-shadow: 0 2px 6px rgba(34, 113, 177, 0.2);
-}
+  .test-repo-form .button-secondary {
+    padding: 5px 16px;
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 20px;
+    color: #24292f;
+    background-color: #f6f8fa;
+    border: 1px solid rgba(27, 31, 36, 0.15);
+    border-radius: 6px;
+    cursor: pointer;
+    box-shadow: 0 1px 0 rgba(27, 31, 36, 0.04);
+    transition: background-color 0.2s ease, border-color 0.2s ease;
+  }
+
+  .test-repo-form .button-secondary:hover {
+    background-color: #f3f4f6;
+    border-color: rgba(27, 31, 36, 0.15);
+    box-shadow: 0 1px 0 rgba(27, 31, 36, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.03);
+  }
+
+  .test-repo-form .button-secondary:active {
+    background-color: #eaeef2;
+    box-shadow: inset 0 1px 0 rgba(0, 0, 0, 0.15);
+  }
+
+  /* Repository Dropdown Wrapper */
+  .repo-dd-wrapper {
+    background: #ffffff;
+    border: 1px solid #d0d7de;
+    border-radius: 6px;
+    padding: 16px;
+    max-width: 100%;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+    margin-bottom: 16px;
+  }
+
+  .repo-dd-wrapper h2 {
+    margin: 0 0 16px 0;
+    font-size: 16px;
+    font-weight: 600;
+    color: #24292f;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #d0d7de;
+  }
+
+  .repo-dd-wrapper form {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+
+  .repo-dd-wrapper select[name="branch"] {
+    flex: 1;
+    padding: 5px 12px;
+    font-size: 14px;
+    line-height: 20px;
+    color: #24292f;
+    background-color: #f6f8fa;
+    border: 1px solid #d0d7de;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: border-color 0.2s, background-color 0.2s;
+  }
+
+  .repo-dd-wrapper select[name="branch"]:hover {
+    background-color: #ffffff;
+    border-color: #0969da;
+  }
+
+  .repo-dd-wrapper select[name="branch"]:focus {
+    outline: none;
+    border-color: #0969da;
+    box-shadow: 0 0 0 3px rgba(9, 105, 218, 0.3);
+    background-color: #ffffff;
+  }
+
+  .repo-dd-wrapper button[type="submit"] {
+    padding: 5px 16px;
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 20px;
+    color: #ffffff;
+    background-color: #1f883d;
+    border: 1px solid rgba(27, 31, 36, 0.15);
+    border-radius: 6px;
+    cursor: pointer;
+    box-shadow: 0 1px 0 rgba(27, 31, 36, 0.04);
+    transition: background-color 0.2s;
+    white-space: nowrap;
+  }
+
+  .repo-dd-wrapper button[type="submit"]:hover {
+    background-color: #1a7f37;
+    box-shadow: 0 1px 0 rgba(27, 31, 36, 0.1);
+  }
+
+  .repo-dd-wrapper button[type="submit"]:active {
+    background-color: #187733;
+    box-shadow: inset 0 1px 0 rgba(0, 0, 0, 0.15);
+  }
+
+  .repo-dd-wrapper p {
+    margin: 0;
+    padding: 8px 12px;
+    background-color: #f6f8fa;
+    border: 1px solid #d0d7de;
+    border-radius: 6px;
+    font-size: 12px;
+    color: #57606a;
+    font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+  }
+
+  .repo-dd-wrapper p strong {
+    color: #24292f;
+    font-weight: 600;
+    margin-right: 8px;
+  }
+
+  /* Responsive Design */
+  @media (max-width: 768px) {
+    .form-table th {
+      flex: 0 0 100%;
+    }
+
+    .form-table .regular-text {
+      width: 100%;
+      min-width: auto;
+    }
+
+    .current_branch_wrapper {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 12px;
+    }
+
+    .repo-dd-wrapper form {
+      flex-direction: column;
+    }
+
+    .repo-dd-wrapper button[type="submit"] {
+      width: 100%;
+    }
+  }
+
+  /* Focus States for Accessibility */
+  button:focus-visible,
+  input:focus-visible,
+  select:focus-visible {
+    outline: 2px solid #0969da;
+    outline-offset: 2px;
+  }
+
+  /* Disabled States */
+  button:disabled,
+  input:disabled,
+  select:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+
+  .button-primary:disabled {
+    background-color: #94d3a2;
+  }
+
+  .button-secondary:disabled {
+    background-color: #f6f8fa;
+    color: #8c959f;
+  }

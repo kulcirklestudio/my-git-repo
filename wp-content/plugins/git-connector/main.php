@@ -52,6 +52,49 @@ add_action('admin_menu', function () {
     );
 });
 
+function run_git_command($path, $command)
+{
+    $output = [];
+    $status = 0;
+
+    exec('git -C ' . escapeshellarg($path) . ' ' . $command . ' 2>&1', $output, $status);
+
+    return [
+        'output' => $output,
+        'status' => $status
+    ];
+}
+
+add_action('admin_init', function () {
+
+    // COMMIT
+    if (
+        isset($_POST['git_commit']) &&
+        isset($_POST['git_commit_nonce']) &&
+        wp_verify_nonce($_POST['git_commit_nonce'], 'git_commit_action')
+    ) {
+
+        $path = get_option('git_plugin_local_path');
+        $message = sanitize_text_field($_POST['commit_message']);
+
+        if (!$path || !$message) {
+            add_settings_error('git_plugin', 'commit_error', 'Missing path or commit message');
+            return;
+        }
+
+        run_git_command($path, 'add .');
+        $result = run_git_command($path, 'commit -m ' . escapeshellarg($message));
+
+        add_settings_error(
+            'git_plugin',
+            'commit_result',
+            implode("\n", $result['output']),
+            $result['status'] === 0 ? 'updated' : 'error'
+        );
+    }
+
+});
+
 function validate_git_path($path)
 {
     $path = trim($path);
@@ -96,128 +139,176 @@ function validate_git_path($path)
 
 function render_git_settings_page()
 {
-    // Test Repo
+    $path = get_option('git_plugin_local_path', '');
+
+    // ======================
+    // TEST REPO
+    // ======================
     if (
         isset($_POST['test_git_repo']) &&
-        isset($_POST['test_git_repo_nonce']) &&
         wp_verify_nonce($_POST['test_git_repo_nonce'], 'test_git_repo_action')
     ) {
-
-        $path = get_option('git_plugin_local_path');
-
         if (!$path) {
             echo '<div class="notice notice-error"><p>No path set</p></div>';
-            return;
+        } else {
+            $result = run_git_command($path, 'status');
+
+            echo '<div class="notice ' . ($result['status'] === 0 ? 'notice-success' : 'notice-error') . '"><pre>';
+            echo esc_html(implode("\n", $result['output']));
+            echo '</pre></div>';
         }
-
-        $output = [];
-        $status = 0;
-
-        exec('git -C ' . escapeshellarg($path) . ' status 2>&1', $output, $status);
-
-        echo '<div class="notice ' . ($status === 0 ? 'notice-success' : 'notice-error') . '"><pre>';
-        echo esc_html(implode("\n", $output));
-        echo '</pre></div>';
     }
 
-    // Switch Between Branches
+    // ======================
+    // SWITCH BRANCH (SAFE)
+    // ======================
     if (
         isset($_POST['switch_branch']) &&
-        isset($_POST['select_branch_nonce']) &&
         wp_verify_nonce($_POST['select_branch_nonce'], 'select_branch_action')
     ) {
         $branch = sanitize_text_field($_POST['branch']);
-        $path = get_option('git_plugin_local_path');
 
-        $output = [];
-        $status = 0;
+        // 🔴 Check for uncommitted changes
+        $status_check = run_git_command($path, 'status --porcelain');
 
-        exec(
-            'git -C ' . escapeshellarg($path) . ' checkout ' . escapeshellarg($branch) . ' 2>&1',
-            $output,
-            $status
-        );
+        if (!empty($status_check['output'])) {
+            echo '<div class="notice notice-error"><p>Uncommitted changes exist. Commit or stash before switching branch.</p></div>';
+        } else {
+            $result = run_git_command($path, 'checkout ' . escapeshellarg($branch));
 
-        echo '<div class="notice ' . ($status === 0 ? 'notice-success' : 'notice-error') . '"><pre>';
-        echo esc_html(implode("\n", $output));
-        echo '</pre></div>';
+            echo '<div class="notice ' . ($result['status'] === 0 ? 'notice-success' : 'notice-error') . '"><pre>';
+            echo esc_html(implode("\n", $result['output']));
+            echo '</pre></div>';
+        }
     }
 
-    // local path
-    $path = get_option('git_plugin_local_path', '');
-
-    // Current Active Branch
-    $branch_output = [];
-    exec('git -C ' . escapeshellarg($path) . ' branch --show-current', $branch_output);
-
-    $current_branch = $branch_output[0] ?? 'unknown';
-
-    // List All Branches
+    // ======================
+    // LOAD DATA (ONLY IF PATH EXISTS)
+    // ======================
+    $current_branch = 'N/A';
     $branches = [];
-    exec('git -C ' . escapeshellarg($path) . ' branch --format="%(refname:short)"', $branches);
-    ?>
-    <div class="wrap">
+    $remote = [];
 
+    if ($path) {
+        $branch_output = run_git_command($path, 'branch --show-current');
+        $current_branch = $branch_output['output'][0] ?? 'unknown';
+
+        $branches_result = run_git_command($path, 'branch --format="%(refname:short)"');
+        $branches = $branches_result['output'];
+
+        $remote_result = run_git_command($path, 'remote -v');
+        $remote = $remote_result['output'];
+
+        $status_result = run_git_command($path, 'status --porcelain');
+        $repo_status = $status_result['output'];
+    }
+
+    ?>
+
+    <div class="wrap">
         <h1>Git Plugin Settings</h1>
 
         <?php settings_errors(); ?>
 
+        <!-- SETTINGS FORM -->
         <form method="post" action="options.php">
-            <?php
-            settings_fields('git_plugin_settings_group');
-            ?>
+            <?php settings_fields('git_plugin_settings_group'); ?>
 
             <table class="form-table">
                 <tr>
-                    <th scope="row">Local Repository Path</th>
+                    <th>Local Repository Path</th>
                     <td>
                         <input type="text" name="git_plugin_local_path" value="<?php echo esc_attr($path); ?>"
                             class="regular-text" placeholder="C:\xampp\htdocs\git">
                     </td>
-                    <td>
-                        <?php submit_button(); ?>
-                    </td>
                 </tr>
             </table>
+
+            <?php submit_button(); ?>
         </form>
-        <div class="current_branch_wrapper">
-            <div class="current-branch">
-                <p>Current Active Branch:</p>
-                <p>
-                    <?php echo $current_branch ?>
+
+        <?php if ($path): ?>
+
+            <!-- CURRENT BRANCH + TEST -->
+            <div class="current_branch_wrapper">
+                <p><strong>Current Branch:</strong>
+                    <?php echo esc_html($current_branch); ?>
                 </p>
+
+                <form method="post">
+                    <?php wp_nonce_field('test_git_repo_action', 'test_git_repo_nonce'); ?>
+                    <input type="hidden" name="test_git_repo" value="1">
+                    <button type="submit" class="button button-secondary">
+                        Debug Repository
+                    </button>
+                </form>
             </div>
-            <form method="post" class="test-repo-form">
-                <?php wp_nonce_field('test_git_repo_action', 'test_git_repo_nonce'); ?>
 
-                <input type="hidden" name="test_git_repo" value="1">
+            <div class="repo-status">
+                <h2>Repository Status</h2>
 
-                <button type="submit" class="button button-secondary">
-                    🔗 Test Repository
-                </button>
-            </form>
-        </div>
-        <?php if (!empty($path)): ?>
+                <?php if (empty($repo_status)): ?>
+                    <p style="color:green;"><strong>Clean (no changes)</strong></p>
+                <?php else: ?>
+                    <p style="color:red;"><strong>Uncommitted Changes:</strong></p>
+                    <pre><?php echo esc_html(implode("\n", $repo_status)); ?></pre>
+                <?php endif; ?>
+            </div>
 
-            <h2>Repository Drop Down</h2>
+            <div class="commit-section">
+                <h2>Commit Changes</h2>
 
-            <form method="post">
-                <?php wp_nonce_field('select_branch_action', 'select_branch_nonce'); ?>
+                <?php if (empty($repo_status)): ?>
+                    <p>No changes to commit</p>
+                <?php else: ?>
+                    <form method="post">
+                        <?php wp_nonce_field('git_commit_action', 'git_commit_nonce'); ?>
 
-                <select name="branch">
-                    <?php foreach ($branches as $branch): ?>
-                        <option value="<?php echo esc_attr($branch); ?>" <?php selected($branch, $current_branch); ?>>
-                            <?php echo esc_html($branch); ?>
-                        </option>
-                    <?php endforeach; ?>
-                </select>
+                        <input type="text" name="commit_message" placeholder="Enter commit message" style="width: 300px;" required>
 
-                <button type="submit" name="switch_branch" class="button">
-                    Switch Branch
-                </button>
-            </form>
+                        <button type="submit" name="git_commit" class="button button-primary">
+                            Commit
+                        </button>
+                    </form>
+                <?php endif; ?>
+            </div>
+
+            <!-- BRANCH SWITCH -->
+            <div class="repo-dd-wrapper">
+                <h2>Switch Branch</h2>
+
+                <form method="post">
+                    <?php wp_nonce_field('select_branch_action', 'select_branch_nonce'); ?>
+
+                    <select name="branch">
+                        <?php foreach ($branches as $branch): ?>
+                            <option value="<?php echo esc_attr($branch); ?>" <?php selected($branch, $current_branch); ?>>
+                                <?php echo esc_html($branch); ?>
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
+
+                    <button type="submit" name="switch_branch" class="button">
+                        Switch Branch
+                    </button>
+                </form>
+            </div>
+
+            <!-- REMOTE INFO -->
+            <div class="remote-info">
+                <h2>Remote</h2>
+
+                <?php if (empty($remote)): ?>
+                    <div class="notice notice-warning">
+                        <p>No remote repository connected</p>
+                    </div>
+                <?php else: ?>
+                    <pre><?php echo esc_html(implode("\n", $remote)); ?></pre>
+                <?php endif; ?>
+            </div>
 
         <?php endif; ?>
+
     </div>
     <?php
 }

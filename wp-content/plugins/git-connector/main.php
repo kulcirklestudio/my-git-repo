@@ -274,6 +274,7 @@ function validate_git_path($path)
         return '';
     }
 
+
     $real = realpath($path);
 
     if (!$real || !is_dir($real)) {

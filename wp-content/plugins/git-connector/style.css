@@ -55,6 +55,7 @@
   ======================================== */
 
 /* Common Section Container */
+.merge-branch,
 .repo-dd-wrapper,
 .form-table,
 .repo-status,
@@ -70,6 +71,7 @@
   font-family: var(--font-family);
 }
 
+.merge-branch,
 .repo-dd-wrapper {
   max-width: 100%;
 }
@@ -81,6 +83,7 @@
 }
 
 /* Common Section Headings */
+.merge-branch h2,
 .repo-dd-wrapper h2,
 .repo-status h2,
 .commit-section h2,
@@ -95,6 +98,7 @@
   border-bottom: 1px solid var(--color-border);
 }
 
+.merge-branch h2,
 .repo-dd-wrapper h2 {
   margin-bottom: var(--spacing-lg);
 }
@@ -126,6 +130,7 @@
 }
 
 /* Common Form Styles */
+.merge-branch form,
 .repo-dd-wrapper form,
 .pull-section form,
 .push-section form {
@@ -135,6 +140,7 @@
   gap: var(--spacing-sm);
 }
 
+.merge-branch form,
 .repo-dd-wrapper form {
   margin-bottom: var(--spacing-lg);
   gap: var(--spacing-sm);
@@ -147,6 +153,7 @@
 /* Base Button Styles */
 .button-primary,
 .button-secondary,
+.merge-branch button[type="submit"],
 .repo-dd-wrapper button[type="submit"],
 .pull-section .button-primary,
 .push-section .button-primary,
@@ -167,18 +174,21 @@
 }
 
 /* Primary Button (Green - Success) */
+.merge-branch button[type="submit"],
 .repo-dd-wrapper button[type="submit"],
 .pull-section .button-primary {
   color: #ffffff;
   background-color: var(--color-success);
 }
 
+.merge-branch button[type="submit"]:hover,
 .repo-dd-wrapper button[type="submit"]:hover,
 .pull-section .button-primary:hover {
   background-color: var(--color-success-hover);
   box-shadow: var(--shadow-btn-hover), inset 0 1px 0 rgba(255, 255, 255, 0.03);
 }
 
+.merge-branch button[type="submit"]:active,
 .repo-dd-wrapper button[type="submit"]:active,
 .pull-section .button-primary:active {
   background-color: var(--color-success-active);
@@ -242,6 +252,7 @@
 /* Button Focus States */
 .button-primary:focus-visible,
 .button-secondary:focus-visible,
+.merge-branch button[type="submit"]:focus-visible,
 .repo-dd-wrapper button[type="submit"]:focus-visible,
 .pull-section .button-primary:focus-visible,
 .push-section .button-primary:focus-visible {
@@ -356,6 +367,7 @@
      Input & Select Styles
   ======================================== */
 .form-table .regular-text,
+.merge-branch select[name="merge_branch"],
 .repo-dd-wrapper select[name="branch"] {
   padding: 5px 12px;
   font-size: var(--font-size-base);
@@ -375,6 +387,7 @@
   font-family: var(--font-family-mono);
 }
 
+.merge-branch select[name="merge_branch"],
 .repo-dd-wrapper select[name="branch"] {
   flex: 1;
   background-color: var(--color-bg-secondary);
@@ -382,16 +395,21 @@
 }
 
 .form-table .regular-text:hover,
+.merge-branch select[name="merge_branch"]:hover,
 .repo-dd-wrapper select[name="branch"]:hover {
   border-color: var(--color-border-hover);
 }
 
+.merge-branch select[name="merge_branch"]:hover,
 .repo-dd-wrapper select[name="branch"]:hover {
   background-color: var(--color-bg-primary);
 }
 
 .form-table .regular-text:focus,
-.repo-dd-wrapper select[name="branch"]:focus {
+.merge-branch
+  select[name="merge_branch"]:focus
+  .repo-dd-wrapper
+  select[name="branch"]:focus {
   outline: none;
   border-color: var(--color-border-hover);
   box-shadow: var(--shadow-focus);
@@ -449,6 +467,7 @@
   ======================================== */
 
 /* Code/Monospace Blocks */
+.merge-branch,
 .repo-dd-wrapper p,
 .remote-info pre {
   margin: 0;
@@ -461,6 +480,7 @@
   font-family: var(--font-family-mono);
 }
 
+.merge-branch,
 .repo-dd-wrapper p strong,
 .remote-info pre strong {
   color: var(--color-text-primary);

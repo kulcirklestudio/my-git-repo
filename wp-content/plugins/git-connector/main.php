@@ -239,6 +239,7 @@ add_action('admin_init', function () {
     // ======================
     if (
         isset($_POST['git_merge_branch']) &&
+        isset($_POST['git_merge_branch_nonce']) &&
         wp_verify_nonce($_POST['git_merge_branch_nonce'], 'git_merge_branch_action')
     ) {
 

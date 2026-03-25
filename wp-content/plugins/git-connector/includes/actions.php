@@ -210,6 +210,28 @@ add_action('admin_init', function () {
         // ✅ Safe delete
         $result = run_git_command($path, 'branch -d ' . escapeshellarg($branch));
 
+        $delete_remote = isset($_POST['delete_remote']);
+
+        if ($delete_remote) {
+
+            if (!git_has_remote($path)) {
+                add_settings_error('git_plugin', 'no_remote', 'No remote found for deletion');
+                return;
+            }
+
+            $remote_result = run_git_command(
+                $path,
+                'push origin --delete ' . escapeshellarg($branch)
+            );
+
+            add_settings_error(
+                'git_plugin',
+                'remote_delete',
+                implode("\n", $remote_result['output']),
+                $remote_result['status'] === 0 ? 'updated' : 'error'
+            );
+        }
+
         add_settings_error(
             'git_plugin',
             'delete_result',

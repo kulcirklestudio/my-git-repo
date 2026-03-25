@@ -243,6 +243,11 @@ function render_git_settings_page()
                         <?php endforeach; ?>
                     </select>
 
+                    <label>
+                        <input type="checkbox" name="delete_remote" value="1">
+                        Also delete from remote
+                    </label>
+
                     <button type="submit" name="git_delete_branch" class="button button-danger">
                         Delete Branch
                     </button>

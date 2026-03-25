@@ -517,9 +517,9 @@
  ================================ */
 .submit {
   margin: 0;
-  padding: var(--gh-spacing-lg);
+  /* padding: var(--gh-spacing-lg); */
   border-top: 1px solid var(--gh-border-muted);
-  background: var(--gh-bg-secondary);
+  /* background: var(--gh-bg-secondary); */
 }
 
 /* ================================

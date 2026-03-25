@@ -209,6 +209,52 @@ function render_git_settings_page()
                 </form>
             </div>
 
+            <!-- Delete Branch Section -->
+            <div class="delete-branch">
+                <h2>Delete Branch</h2>
+
+                <?php
+                $default_branch = git_get_default_branch($path);
+
+                $current = run_git_command($path, 'branch --show-current');
+                $current_branch = $current['output'][0] ?? '';
+                ?>
+
+                <form method="post">
+                    <?php wp_nonce_field('git_delete_branch_action', 'git_delete_branch_nonce'); ?>
+
+                    <select name="delete_branch">
+                        <?php foreach ($branches as $branch): ?>
+
+                            <?php
+                            // 🚫 Skip current branch
+                            if ($branch === $current_branch)
+                                continue;
+
+                            // 🚫 Skip default branch (if known)
+                            if ($default_branch && $branch === $default_branch)
+                                continue;
+                            ?>
+
+                            <option value="<?php echo esc_attr($branch); ?>">
+                                <?php echo esc_html($branch); ?>
+                            </option>
+
+                        <?php endforeach; ?>
+                    </select>
+
+                    <button type="submit" name="git_delete_branch" class="button button-danger">
+                        Delete Branch
+                    </button>
+                </form>
+
+                <?php if (!$default_branch): ?>
+                    <p style="color:orange;">
+                        Default branch not detected. Deletion is limited for safety.
+                    </p>
+                <?php endif; ?>
+            </div>
+
             <!-- Create Branch Section -->
             <div class="create-branch repo-dd-wrapper">
                 <h2>Create Branch</h2>

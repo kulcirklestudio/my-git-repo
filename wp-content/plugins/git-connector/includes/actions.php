@@ -169,4 +169,53 @@ add_action('admin_init', function () {
         );
     }
 
+    // ======================
+    // DELETE BRANCH
+    // ======================
+    if (
+        isset($_POST['git_delete_branch']) &&
+        isset($_POST['git_delete_branch_nonce']) &&
+        wp_verify_nonce($_POST['git_delete_branch_nonce'], 'git_delete_branch_action')
+    ) {
+
+        $path = git_get_valid_repo_path();
+        $branch = isset($_POST['delete_branch']) ? sanitize_text_field($_POST['delete_branch']) : '';
+
+        if (!$path || !$branch)
+            return;
+
+        // 🔴 Block if dirty repo
+        if (!git_is_repo_clean($path)) {
+            add_settings_error('git_plugin', 'dirty_repo', 'Commit changes before deleting a branch');
+            return;
+        }
+
+        // 🔴 Block active branch
+        $current = run_git_command($path, 'branch --show-current');
+        $current_branch = $current['output'][0] ?? '';
+
+        if ($branch === $current_branch) {
+            add_settings_error('git_plugin', 'current_branch', 'Cannot delete active branch');
+            return;
+        }
+
+        // 🔴 Block default branch (if known)
+        $default_branch = git_get_default_branch($path);
+
+        if ($default_branch && $branch === $default_branch) {
+            add_settings_error('git_plugin', 'protected_branch', 'Cannot delete default branch');
+            return;
+        }
+
+        // ✅ Safe delete
+        $result = run_git_command($path, 'branch -d ' . escapeshellarg($branch));
+
+        add_settings_error(
+            'git_plugin',
+            'delete_result',
+            implode("\n", $result['output']),
+            $result['status'] === 0 ? 'updated' : 'error'
+        );
+    }
+
 });

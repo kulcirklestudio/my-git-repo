@@ -40,3 +40,16 @@ function git_has_remote($path)
     $remote = run_git_command($path, 'remote');
     return !empty($remote['output']);
 }
+
+function git_get_default_branch($path)
+{
+    $result = run_git_command($path, 'symbolic-ref refs/remotes/origin/HEAD');
+
+    if (!empty($result['output'][0])) {
+        $ref = $result['output'][0];
+
+        return basename($ref);
+    }
+
+    return 'main'; // fallback (safe guess)
+}

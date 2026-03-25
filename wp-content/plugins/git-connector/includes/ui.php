@@ -68,14 +68,18 @@ function render_git_settings_page()
     ?>
 
     <div class="wrap">
+
         <h1>Git Plugin Settings</h1>
 
         <?php settings_errors(); ?>
 
         <div class="repo-info common-wrapper">
+
             <p class="sec-title">Repository Information</p>
+
             <!-- REMOTE INFO -->
             <div class="remote-info">
+
                 <h2>Remote</h2>
 
                 <?php if (empty($remote)): ?>
@@ -85,6 +89,7 @@ function render_git_settings_page()
                 <?php else: ?>
                     <pre><?php echo esc_html(implode("\n", $remote)); ?></pre>
                 <?php endif; ?>
+
             </div>
 
             <!-- SETTINGS FORM -->
@@ -103,14 +108,18 @@ function render_git_settings_page()
 
                 <?php submit_button(); ?>
             </form>
+
         </div>
 
         <?php if ($path): ?>
 
             <div class="branch-status common-wrapper">
+
                 <p class="sec-title">Branch Status</p>
+
                 <!-- CURRENT BRANCH + TEST -->
                 <div class="current_branch_wrapper">
+
                     <div><strong>Current Branch:</strong>
                         <p class="active_branch">
                             <?php echo esc_html($current_branch); ?>
@@ -124,10 +133,12 @@ function render_git_settings_page()
                             Debug Repository
                         </button>
                     </form>
+
                 </div>
 
                 <!-- Repo status -->
                 <div class="repo-status">
+
                     <h2>Repository Status</h2>
 
                     <?php if (empty($repo_status)): ?>
@@ -136,11 +147,15 @@ function render_git_settings_page()
                         <p style="color:red;"><strong>Uncommitted Changes:</strong></p>
                         <pre><?php echo esc_html(implode("\n", $repo_status)); ?></pre>
                     <?php endif; ?>
+
                 </div>
+
             </div>
 
             <div class="quick-action common-wrapper">
+
                 <p class="sec-title">Quick Action</p>
+
                 <!-- Pull Section -->
                 <div class="pull-section">
                     <h2>Pull Latest Changes</h2>
@@ -156,6 +171,7 @@ function render_git_settings_page()
 
                 <!-- Commit Section -->
                 <div class="commit-section">
+
                     <h2>Commit Changes</h2>
 
                     <?php if (empty($repo_status)): ?>
@@ -172,10 +188,12 @@ function render_git_settings_page()
                             </button>
                         </form>
                     <?php endif; ?>
+
                 </div>
 
                 <!-- Push Section -->
                 <div class="push-section">
+
                     <h2>Push Changes</h2>
 
                     <form method="post">
@@ -186,12 +204,16 @@ function render_git_settings_page()
                         </button>
                     </form>
                 </div>
+
             </div>
 
             <div class="branch-management common-wrapper">
+
                 <p class="sec-title">Branch Management</p>
+
                 <!-- BRANCH SWITCH -->
                 <div class="repo-dd-wrapper">
+
                     <h2>Switch Branch</h2>
 
                     <form method="post">
@@ -209,10 +231,12 @@ function render_git_settings_page()
                             Switch Branch
                         </button>
                     </form>
+
                 </div>
 
                 <!-- Create Branch Section -->
                 <div class="create-branch repo-dd-wrapper">
+
                     <h2>Create Branch</h2>
 
                     <form method="post">
@@ -224,10 +248,12 @@ function render_git_settings_page()
                             Create & Switch
                         </button>
                     </form>
+
                 </div>
 
                 <!-- Merge Section -->
                 <div class="merge-branch">
+
                     <h2>Merge Branch</h2>
 
                     <form method="post">
@@ -247,10 +273,12 @@ function render_git_settings_page()
                             Merge into Current Branch
                         </button>
                     </form>
+
                 </div>
 
                 <!-- Delete Branch Section -->
                 <div class="delete-branch repo-dd-wrapper">
+
                     <h2>Delete Branch</h2>
 
                     <?php
@@ -293,6 +321,7 @@ function render_git_settings_page()
                             Default branch not detected. Deletion is limited for safety.
                         </p>
                     <?php endif; ?>
+
                 </div>
 
             </div>

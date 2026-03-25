@@ -1,615 +1,611 @@
-/* ========================================
-   CSS Variables (for easy customization)
-======================================== */
+/* ================================
+   GIT PLUGIN - GITHUB INSPIRED CSS
+   ================================ */
+
+/* CSS Variables for easy theming */
 :root {
-  /* Colors */
-  --color-text-primary: #24292f;
-  --color-text-secondary: #57606a;
-  --color-text-placeholder: #8c959f;
-  --color-bg-primary: #ffffff;
-  --color-bg-secondary: #f6f8fa;
-  --color-border: #d0d7de;
-  --color-border-hover: #0969da;
-
-  /* Action Colors */
-  --color-success: #1f883d;
-  --color-success-hover: #1a7f37;
-  --color-success-active: #187733;
-  --color-success-bg: #dafbe1;
-  --color-primary: #0969da;
-  --color-primary-hover: #0860ca;
-  --color-primary-active: #0757ba;
-  --color-danger: #cf222e;
-  --color-danger-bg: #ffebe9;
-  --color-warning: #bf8700;
-  --color-warning-bg: #fff8c5;
-  --color-warning-text: #9a6700;
-
-  /* Typography */
-  --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial,
-    sans-serif;
-  --font-family-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas,
-    "Liberation Mono", Monaco, monospace;
-  --font-size-sm: 12px;
-  --font-size-base: 14px;
-  --font-size-lg: 16px;
-
-  /* Spacing */
-  --spacing-xs: 4px;
-  --spacing-sm: 8px;
-  --spacing-md: 12px;
-  --spacing-lg: 16px;
-
-  /* Border Radius */
-  --radius-sm: 6px;
-  --radius-full: 50%;
-
-  /* Shadows */
-  --shadow-btn: 0 1px 0 rgba(27, 31, 36, 0.04);
-  --shadow-btn-hover: 0 1px 0 rgba(27, 31, 36, 0.1);
-  --shadow-focus: 0 0 0 3px rgba(9, 105, 218, 0.3);
+  --gh-bg-primary: #ffffff;
+  --gh-bg-secondary: #f6f8fa;
+  --gh-bg-tertiary: #f1f3f5;
+  --gh-border: #d0d7de;
+  --gh-border-muted: #e1e4e8;
+  --gh-text-primary: #24292f;
+  --gh-text-secondary: #57606a;
+  --gh-text-muted: #6e7781;
+  --gh-accent-blue: #0969da;
+  --gh-accent-green: #1a7f37;
+  --gh-accent-red: #cf222e;
+  --gh-accent-orange: #bf8700;
+  --gh-accent-purple: #8250df;
+  --gh-btn-primary: #2da44e;
+  --gh-btn-primary-hover: #2c974b;
+  --gh-btn-danger: #cf222e;
+  --gh-btn-danger-hover: #a40e26;
+  --gh-shadow: 0 1px 3px rgba(27, 31, 36, 0.04),
+    0 1px 2px rgba(27, 31, 36, 0.06);
+  --gh-shadow-lg: 0 3px 6px rgba(140, 149, 159, 0.15);
+  --gh-radius: 6px;
+  --gh-radius-lg: 12px;
+  --gh-spacing-xs: 8px;
+  --gh-spacing-sm: 12px;
+  --gh-spacing-md: 16px;
+  --gh-spacing-lg: 20px;
+  --gh-spacing-xl: 24px;
 }
 
-/* ========================================
-     Base & Common Styles
-  ======================================== */
-
-/* Common Section Container */
-.merge-branch,
-.repo-dd-wrapper,
-.form-table,
-.repo-status,
-.commit-section,
-.remote-info,
-.pull-section,
-.push-section {
-  background: var(--color-bg-primary);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-sm);
-  padding: var(--spacing-lg);
-  margin-bottom: var(--spacing-lg);
-  font-family: var(--font-family);
+/* ================================
+ MAIN WRAPPER
+ ================================ */
+.wrap {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: var(--gh-spacing-lg);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans",
+    Helvetica, Arial, sans-serif;
 }
 
-.merge-branch,
-.repo-dd-wrapper {
-  max-width: 100%;
-}
-
-.form-table {
-  width: 100%;
-  border-collapse: collapse;
-  overflow: hidden;
-}
-
-/* Common Section Headings */
-.merge-branch h2,
-.repo-dd-wrapper h2,
-.repo-status h2,
-.commit-section h2,
-.remote-info h2,
-.pull-section h2,
-.push-section h2 {
-  margin: 0 0 var(--spacing-md) 0;
-  font-size: var(--font-size-lg);
+.wrap > h1 {
+  font-size: 24px;
   font-weight: 600;
-  color: var(--color-text-primary);
-  padding-bottom: var(--spacing-sm);
-  border-bottom: 1px solid var(--color-border);
-}
-
-.merge-branch h2,
-.repo-dd-wrapper h2 {
-  margin-bottom: var(--spacing-lg);
-}
-
-/* Headings with Icons */
-.pull-section h2,
-.push-section h2 {
+  color: var(--gh-text-primary);
+  margin-bottom: var(--gh-spacing-xl);
+  padding-bottom: var(--gh-spacing-md);
+  border-bottom: 1px solid var(--gh-border);
   display: flex;
   align-items: center;
-  gap: var(--spacing-sm);
+  gap: 10px;
 }
 
-.pull-section h2::before,
-.push-section h2::before {
+.wrap > h1::before {
   content: "";
   display: inline-block;
-  width: 16px;
-  height: 16px;
-  background-size: contain;
+  width: 24px;
+  height: 24px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%2324292f'%3E%3Cpath d='M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
+  background-size: contain;
 }
 
-.pull-section h2::before {
-  background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="%2324292f"><path d="M4.72 3.22a.75.75 0 011.06 1.06L2.06 8l3.72 3.72a.75.75 0 11-1.06 1.06L.47 8.53a.75.75 0 010-1.06l4.25-4.25zm6.56 0a.75.75 0 10-1.06 1.06L13.94 8l-3.72 3.72a.75.75 0 101.06 1.06l4.25-4.25a.75.75 0 000-1.06l-4.25-4.25z"></path></svg>');
+/* ================================
+ COMMON WRAPPER (Card Container)
+ ================================ */
+.common-wrapper {
+  background: var(--gh-bg-primary);
+  border: 1px solid var(--gh-border);
+  border-radius: var(--gh-radius);
+  margin-bottom: var(--gh-spacing-lg);
+  box-shadow: var(--gh-shadow);
+  overflow: hidden;
+  transition: box-shadow 0.2s ease;
 }
 
-.push-section h2::before {
-  background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="%2324292f"><path d="M1.75 1A1.75 1.75 0 000 2.75v10.5C0 14.216.784 15 1.75 15h12.5A1.75 1.75 0 0016 13.25v-10.5A1.75 1.75 0 0014.25 1H1.75zM1.5 2.75a.25.25 0 01.25-.25h12.5a.25.25 0 01.25.25v10.5a.25.25 0 01-.25.25H1.75a.25.25 0 01-.25-.25V2.75zM8 4a.75.75 0 01.75.75v3.69l1.22-1.22a.75.75 0 111.06 1.06l-2.5 2.5a.75.75 0 01-1.06 0l-2.5-2.5a.75.75 0 111.06-1.06l1.22 1.22V4.75A.75.75 0 018 4z"></path></svg>');
+.common-wrapper:hover {
+  box-shadow: var(--gh-shadow-lg);
 }
 
-/* Common Form Styles */
-.merge-branch form,
-.repo-dd-wrapper form,
-.pull-section form,
-.push-section form {
+/* ================================
+ SECTION TITLE (Card Header)
+ ================================ */
+.sec-title {
   margin: 0;
+  padding: var(--gh-spacing-md) var(--gh-spacing-lg);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--gh-text-primary);
+  background: var(--gh-bg-secondary);
+  border-bottom: 1px solid var(--gh-border);
   display: flex;
   align-items: center;
-  gap: var(--spacing-sm);
+  gap: 8px;
 }
 
-.merge-branch form,
-.repo-dd-wrapper form {
-  margin-bottom: var(--spacing-lg);
-  gap: var(--spacing-sm);
+/* Icon indicators for each section */
+.repo-info .sec-title::before {
+  content: "⚙️";
 }
 
-/* ========================================
-     Button Styles
-  ======================================== */
-
-/* Base Button Styles */
-.button-primary,
-.button-secondary,
-.merge-branch button[type="submit"],
-.repo-dd-wrapper button[type="submit"],
-.pull-section .button-primary,
-.push-section .button-primary,
-.current_branch_wrapper .button-secondary {
-  padding: 5px 16px;
-  font-size: var(--font-size-base);
-  font-weight: 500;
-  line-height: 20px;
-  border: 1px solid rgba(27, 31, 36, 0.15);
-  border-radius: var(--radius-sm);
-  cursor: pointer;
-  box-shadow: var(--shadow-btn);
-  transition: background-color 0.2s ease, box-shadow 0.2s ease,
-    transform 0.1s ease;
-  white-space: nowrap;
-  position: relative;
-  overflow: hidden;
+.branch-status .sec-title::before {
+  content: "📊";
 }
 
-/* Primary Button (Green - Success) */
-.merge-branch button[type="submit"],
-.repo-dd-wrapper button[type="submit"],
-.pull-section .button-primary {
-  color: #ffffff;
-  background-color: var(--color-success);
+.quick-action .sec-title::before {
+  content: "⚡";
 }
 
-.merge-branch button[type="submit"]:hover,
-.repo-dd-wrapper button[type="submit"]:hover,
-.pull-section .button-primary:hover {
-  background-color: var(--color-success-hover);
-  box-shadow: var(--shadow-btn-hover), inset 0 1px 0 rgba(255, 255, 255, 0.03);
+.branch-management .sec-title::before {
+  content: "🌿";
 }
 
-.merge-branch button[type="submit"]:active,
-.repo-dd-wrapper button[type="submit"]:active,
-.pull-section .button-primary:active {
-  background-color: var(--color-success-active);
-  box-shadow: inset 0 1px 0 rgba(0, 0, 0, 0.15);
+/* ================================
+ INNER SECTIONS
+ ================================ */
+.common-wrapper > div:not(:first-child),
+.common-wrapper > form {
+  padding: var(--gh-spacing-lg);
+  border-bottom: 1px solid var(--gh-border-muted);
 }
 
-/* Primary Button (Blue) */
-.push-section .button-primary {
-  color: #ffffff;
-  background-color: var(--color-primary);
-  display: inline-flex;
+.common-wrapper > div:last-child,
+.common-wrapper > form:last-child {
+  border-bottom: none;
+}
+
+/* ================================
+ SECTION HEADINGS (h2)
+ ================================ */
+.common-wrapper h2 {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--gh-text-primary);
+  margin: 0 0 var(--gh-spacing-sm) 0;
+  padding: 0;
+  display: flex;
   align-items: center;
   gap: 6px;
 }
 
-.push-section .button-primary:hover {
-  background-color: var(--color-primary-hover);
-  box-shadow: var(--shadow-btn-hover), inset 0 1px 0 rgba(255, 255, 255, 0.03);
-  transform: translateY(-1px);
-}
-
-.push-section .button-primary:active {
-  background-color: var(--color-primary-active);
-  box-shadow: inset 0 1px 0 rgba(0, 0, 0, 0.15);
-  transform: translateY(0);
-}
-
-/* Secondary Button */
-.button-secondary,
-.current_branch_wrapper .button-secondary {
-  color: var(--color-text-primary);
-  background-color: var(--color-bg-primary);
-}
-
-.button-secondary:hover,
-.current_branch_wrapper .button-secondary:hover {
-  background-color: #f3f4f6;
-  box-shadow: var(--shadow-btn-hover);
-}
-
-.button-secondary:active,
-.current_branch_wrapper .button-secondary:active {
-  background-color: #eaeef2;
-  box-shadow: inset 0 1px 0 rgba(0, 0, 0, 0.15);
-}
-
-/* Button Icons */
-.pull-section .button-primary::before {
-  content: "↓";
-  margin-right: 6px;
-  font-weight: bold;
-  font-size: 16px;
-}
-
-.push-section .button-primary::before {
-  content: "↑";
-  font-weight: bold;
-  font-size: 16px;
-}
-
-/* Button Focus States */
-.button-primary:focus-visible,
-.button-secondary:focus-visible,
-.merge-branch button[type="submit"]:focus-visible,
-.repo-dd-wrapper button[type="submit"]:focus-visible,
-.pull-section .button-primary:focus-visible,
-.push-section .button-primary:focus-visible {
-  outline: 2px solid var(--color-primary);
-  outline-offset: 2px;
-}
-
-/* Button Disabled States */
-.button-primary:disabled,
-.button-secondary:disabled,
-.pull-section .button-primary:disabled,
-.push-section .button-primary:disabled {
-  cursor: not-allowed;
-  opacity: 0.6;
-  transform: none;
-}
-
-.pull-section .button-primary:disabled {
-  background-color: #94d3a2;
-}
-
-.push-section .button-primary:disabled {
-  background-color: #80ccff;
-}
-
-/* Button Loading State */
-.button-primary.loading,
-.button-secondary.loading,
-.pull-section .button-primary.loading,
-.push-section .button-primary.loading {
-  color: transparent;
-  pointer-events: none;
-}
-
-.button-primary.loading::before,
-.push-section .button-primary.loading::before {
+.common-wrapper h2::before {
   content: "";
-}
-
-.button-primary.loading::after,
-.button-secondary.loading::after,
-.pull-section .button-primary.loading::after,
-.push-section .button-primary.loading::after {
-  content: "";
-  position: absolute;
-  width: 16px;
+  width: 3px;
   height: 16px;
-  top: 50%;
-  left: 50%;
-  margin-left: -8px;
-  margin-top: -8px;
-  border: 2px solid currentColor;
-  border-radius: var(--radius-full);
-  border-top-color: transparent;
-  animation: spinner 0.6s linear infinite;
+  background: var(--gh-accent-blue);
+  border-radius: 2px;
 }
 
-.button-primary.loading::after,
-.pull-section .button-primary.loading::after,
-.push-section .button-primary.loading::after {
-  border-color: #ffffff;
-  border-top-color: transparent;
+/* ================================
+ REMOTE INFO
+ ================================ */
+.remote-info pre {
+  background: var(--gh-bg-tertiary);
+  border: 1px solid var(--gh-border-muted);
+  border-radius: var(--gh-radius);
+  padding: var(--gh-spacing-sm);
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+  font-size: 12px;
+  color: var(--gh-text-secondary);
+  overflow-x: auto;
+  margin: var(--gh-spacing-sm) 0 0 0;
 }
 
-.button-secondary.loading::after {
-  border-color: var(--color-text-primary);
-  border-top-color: transparent;
+/* ================================
+ NOTICE BOXES
+ ================================ */
+.common-wrapper .notice {
+  margin: var(--gh-spacing-sm) 0;
+  padding: var(--gh-spacing-sm) var(--gh-spacing-md);
+  border-radius: var(--gh-radius);
+  border-left-width: 4px;
+  border-left-style: solid;
 }
 
-/* ========================================
-     Form Table
-  ======================================== */
-.form-table tbody {
-  display: block;
+.common-wrapper .notice-warning {
+  background: #fff8c5;
+  border-left-color: var(--gh-accent-orange);
+  color: #6a5306;
 }
 
-.form-table tr {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--spacing-md);
-  padding: var(--spacing-lg);
-  border-bottom: 1px solid var(--color-border);
+.common-wrapper .notice-warning::before {
+  content: "⚠️ ";
 }
 
-.form-table tr:last-child {
-  border-bottom: none;
+.common-wrapper .notice p {
+  margin: 0;
+  font-size: 13px;
+}
+
+/* ================================
+ FORM TABLE (Settings)
+ ================================ */
+.form-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 0;
 }
 
 .form-table th {
-  flex: 0 0 200px;
   text-align: left;
-  font-weight: 600;
-  font-size: var(--font-size-base);
-  color: var(--color-text-primary);
+  font-weight: 500;
+  color: var(--gh-text-secondary);
+  font-size: 13px;
+  padding: var(--gh-spacing-sm) var(--gh-spacing-md) var(--gh-spacing-sm) 0;
+  width: 200px;
+  vertical-align: middle;
 }
 
 .form-table td {
-  flex: 1;
-  margin-bottom: 0;
-  padding: 0;
+  padding: var(--gh-spacing-sm) 0;
 }
 
-.form-table td p {
-  padding: 0;
-  margin: 0;
-  font-size: var(--font-size-sm);
-  color: var(--color-text-secondary);
-}
-
-/* ========================================
-     Input & Select Styles
-  ======================================== */
-.form-table .regular-text,
-.delete_branch select[name="delete_branch"],
-.merge-branch select[name="merge_branch"],
-.repo-dd-wrapper select[name="branch"] {
+/* ================================
+ INPUTS & SELECTS
+ ================================ */
+.common-wrapper input[type="text"],
+.common-wrapper select {
   padding: 5px 12px;
-  font-size: var(--font-size-base);
+  font-size: 14px;
   line-height: 20px;
-  color: var(--color-text-primary);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-sm);
-  box-sizing: border-box;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease,
-    background-color 0.2s ease;
+  color: var(--gh-text-primary);
+  background: var(--gh-bg-primary);
+  border: 1px solid var(--gh-border);
+  border-radius: var(--gh-radius);
+  box-shadow: inset 0 1px 0 rgba(208, 215, 222, 0.2);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
-.form-table .regular-text {
-  width: 100%;
-  max-width: 500px;
-  background-color: var(--color-bg-primary);
-  font-family: var(--font-family-mono);
-}
-
-.delete-branch select[name="delete_branch"],
-.merge-branch select[name="merge_branch"],
-.repo-dd-wrapper select[name="branch"] {
-  flex: 1;
-  background-color: var(--color-bg-secondary);
-  cursor: pointer;
-}
-
-.form-table .regular-text:hover,
-.delete-branch select[name="delete_branch"]:hover,
-.merge-branch select[name="merge_branch"]:hover,
-.repo-dd-wrapper select[name="branch"]:hover {
-  border-color: var(--color-border-hover);
-}
-
-.delete-branch select[name="delete_branch"]:hover,
-.merge-branch select[name="merge_branch"]:hover,
-.repo-dd-wrapper select[name="branch"]:hover {
-  background-color: var(--color-bg-primary);
-}
-
-.form-table .regular-text:focus,
-.delete-branch select[name="delete_branch"]:focus,
-.merge-branch
-  select[name="merge_branch"]:focus
-  .repo-dd-wrapper
-  select[name="branch"]:focus {
+.common-wrapper input[type="text"]:focus,
+.common-wrapper select:focus {
+  border-color: var(--gh-accent-blue);
+  box-shadow: 0 0 0 3px rgba(9, 105, 218, 0.15);
   outline: none;
-  border-color: var(--color-border-hover);
-  box-shadow: var(--shadow-focus);
-  background-color: var(--color-bg-primary);
 }
 
-.form-table .regular-text::placeholder {
-  color: var(--color-text-placeholder);
+.common-wrapper input[type="text"] {
+  min-width: 300px;
 }
 
-/* ========================================
-     Current Branch Wrapper
-  ======================================== */
+.common-wrapper select {
+  min-width: 180px;
+  cursor: pointer;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%2357606a' d='M6 8.825L1.175 4 2.238 2.938 6 6.7l3.763-3.762L10.825 4z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 8px center;
+  padding-right: 28px;
+  appearance: none;
+}
+
+/* ================================
+ BUTTONS
+ ================================ */
+.common-wrapper .button,
+.common-wrapper button[type="submit"],
+.wrap input[type="submit"] {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 5px 16px;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 20px;
+  cursor: pointer;
+  border: 1px solid transparent;
+  border-radius: var(--gh-radius);
+  transition: all 0.15s ease;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+/* Secondary Button (Default) */
+.common-wrapper .button,
+.common-wrapper .button-secondary {
+  color: var(--gh-text-primary);
+  background: var(--gh-bg-secondary);
+  border-color: var(--gh-border);
+}
+
+.common-wrapper .button:hover,
+.common-wrapper .button-secondary:hover {
+  background: var(--gh-bg-tertiary);
+  border-color: var(--gh-border);
+}
+
+/* Primary Button */
+.common-wrapper .button-primary,
+.wrap input[type="submit"] {
+  color: #ffffff;
+  background: var(--gh-btn-primary);
+  border-color: rgba(27, 31, 36, 0.15);
+  box-shadow: 0 1px 0 rgba(27, 31, 36, 0.1);
+}
+
+.common-wrapper .button-primary:hover,
+.wrap input[type="submit"]:hover {
+  background: var(--gh-btn-primary-hover);
+}
+
+/* Danger Button */
+.common-wrapper .button-danger {
+  color: #ffffff;
+  background: var(--gh-btn-danger);
+  border-color: rgba(27, 31, 36, 0.15);
+  box-shadow: 0 1px 0 rgba(27, 31, 36, 0.1);
+}
+
+.common-wrapper .button-danger:hover {
+  background: var(--gh-btn-danger-hover);
+}
+
+/* ================================
+ CURRENT BRANCH WRAPPER
+ ================================ */
 .current_branch_wrapper {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background: var(--color-bg-secondary);
-  padding: var(--spacing-lg);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-sm);
-  margin-bottom: var(--spacing-lg);
+  flex-wrap: wrap;
+  gap: var(--gh-spacing-md);
 }
 
-.current_branch_wrapper div {
-  margin: 0;
-  font-size: var(--font-size-base);
-  color: var(--color-text-primary);
+.current_branch_wrapper > div {
   display: flex;
   align-items: center;
-  gap: var(--spacing-sm);
+  gap: var(--gh-spacing-xs);
 }
 
-.current_branch_wrapper div strong {
-  font-weight: 600;
-  color: var(--color-text-primary);
+.current_branch_wrapper strong {
+  color: var(--gh-text-secondary);
+  font-size: 13px;
 }
 
-.current_branch_wrapper .active_branch {
-  border: 1px solid var(--color-success);
-  padding: 10px;
-  border-radius: 50px;
-  background-color: var(--color-success);
-  color: var(--color-bg-primary);
-  font-size: 15px;
-  font-weight: 700;
-}
-
-.current_branch_wrapper form {
-  margin: 0;
-}
-
-/* ========================================
-     Content Blocks (Status Messages, Pre, etc.)
-  ======================================== */
-
-/* Code/Monospace Blocks */
-.repo-dd-wrapper p,
-.remote-info pre {
-  margin: 0;
-  padding: var(--spacing-sm) var(--spacing-md);
-  background-color: var(--color-bg-secondary);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-sm);
-  font-size: var(--font-size-sm);
-  color: var(--color-text-secondary);
-  font-family: var(--font-family-mono);
-}
-
-.merge-branch,
-.repo-dd-wrapper p strong,
-.remote-info pre strong {
-  color: var(--color-text-primary);
-  font-weight: 600;
-  margin-right: var(--spacing-sm);
-}
-
-.remote-info pre {
-  padding: var(--spacing-lg);
-  line-height: 1.6;
-  color: var(--color-text-primary);
-  overflow-x: auto;
-  white-space: pre-wrap;
-  word-wrap: break-word;
-}
-
-.remote-info pre::before {
-  content: "📡";
-  margin-right: var(--spacing-sm);
-}
-
-/* Info/Status Messages */
-.delete-remote-chkbx,
-.repo-status p,
-.commit-section p {
-  margin: 0;
-  font-size: var(--font-size-base);
-  padding: var(--spacing-md);
-  border-radius: var(--radius-sm);
-}
-
-.commit-section p {
-  color: var(--color-text-secondary);
-  background-color: var(--color-bg-secondary);
-  border: 1px solid var(--color-border);
-}
-
-.repo-status p {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-sm);
-}
-
-.repo-status p strong {
-  font-weight: 600;
-}
-
-/* Status Icons */
-.repo-status p::before {
+.active_branch {
   display: inline-flex;
   align-items: center;
-  justify-content: center;
-  width: 20px;
-  height: 20px;
-  color: #ffffff;
-  border-radius: var(--radius-full);
-  font-size: var(--font-size-sm);
-  font-weight: bold;
-  flex-shrink: 0;
+  gap: 6px;
+  margin: 0;
+  padding: 4px 12px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--gh-accent-blue);
+  background: rgba(9, 105, 218, 0.1);
+  border: 1px solid rgba(9, 105, 218, 0.2);
+  border-radius: 20px;
 }
 
-/* Success Status */
+.active_branch::before {
+  content: "";
+  width: 8px;
+  height: 8px;
+  background: var(--gh-accent-green);
+  border-radius: 50%;
+  box-shadow: 0 0 0 2px rgba(26, 127, 55, 0.2);
+}
+
+/* ================================
+ REPO STATUS
+ ================================ */
+.repo-status p {
+  margin: 0 0 var(--gh-spacing-sm) 0;
+  font-size: 13px;
+}
+
 .repo-status p[style*="green"] {
-  background-color: var(--color-success-bg);
-  border: 1px solid var(--color-success);
-  color: var(--color-success-hover) !important;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  background: rgba(26, 127, 55, 0.1);
+  border: 1px solid rgba(26, 127, 55, 0.2);
+  border-radius: var(--gh-radius);
+  color: var(--gh-accent-green) !important;
 }
 
 .repo-status p[style*="green"]::before {
   content: "✓";
-  background-color: var(--color-success);
+  font-weight: bold;
 }
 
-/* Error Status */
 .repo-status p[style*="red"] {
-  background-color: var(--color-danger-bg);
-  border: 1px solid var(--color-danger);
-  color: var(--color-danger) !important;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  background: rgba(207, 34, 46, 0.1);
+  border: 1px solid rgba(207, 34, 46, 0.2);
+  border-radius: var(--gh-radius);
+  color: var(--gh-btn-danger) !important;
 }
 
 .repo-status p[style*="red"]::before {
-  content: "✗";
-  background-color: var(--color-danger);
+  content: "●";
 }
 
-/* Warning Status */
-.repo-status p[style*="orange"],
-.repo-status p[style*="yellow"] {
-  background-color: var(--color-warning-bg);
-  border: 1px solid var(--color-warning);
-  color: var(--color-warning-text) !important;
+.repo-status pre {
+  background: #0d1117;
+  color: #c9d1d9;
+  border-radius: var(--gh-radius);
+  padding: var(--gh-spacing-md);
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+  font-size: 12px;
+  line-height: 1.6;
+  overflow-x: auto;
+  margin: var(--gh-spacing-sm) 0 0 0;
+  border: 1px solid #30363d;
 }
 
-.repo-status p[style*="orange"]::before,
-.repo-status p[style*="yellow"]::before {
-  content: "!";
-  background-color: var(--color-warning);
+/* ================================
+ QUICK ACTIONS (Pull, Commit, Push)
+ ================================ */
+.quick-action .pull-section,
+.quick-action .commit-section,
+.quick-action .push-section {
+  padding: var(--gh-spacing-lg);
+  border-bottom: 1px solid var(--gh-border-muted);
 }
 
-/* ========================================
-     Scrollbar Styles
-  ======================================== */
-.remote-info pre::-webkit-scrollbar {
+.quick-action .push-section {
+  border-bottom: none;
+}
+
+.quick-action form {
+  display: flex;
+  align-items: center;
+  gap: var(--gh-spacing-sm);
+  margin-top: var(--gh-spacing-sm);
+  padding: 0;
+  border: none;
+}
+
+.commit-section input[type="text"] {
+  flex: 1;
+  max-width: 400px;
+}
+
+/* ================================
+ BRANCH MANAGEMENT SECTIONS
+ ================================ */
+.repo-dd-wrapper,
+.merge-branch,
+.delete-branch {
+  padding: var(--gh-spacing-lg);
+  border-bottom: 1px solid var(--gh-border-muted);
+}
+
+.delete-branch {
+  border-bottom: none;
+}
+
+.repo-dd-wrapper form,
+.merge-branch form,
+.delete-branch form {
+  display: flex;
+  align-items: center;
+  gap: var(--gh-spacing-sm);
+  flex-wrap: wrap;
+  margin-top: var(--gh-spacing-sm);
+  padding: 0;
+  border: none;
+}
+
+/* ================================
+ CHECKBOX STYLING
+ ================================ */
+.delete-remote-chkbx {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--gh-text-secondary);
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: var(--gh-radius);
+  transition: background 0.15s ease;
+}
+
+.delete-remote-chkbx:hover {
+  background: var(--gh-bg-tertiary);
+}
+
+.delete-remote-chkbx input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--gh-accent-blue);
+  cursor: pointer;
+}
+
+/* ================================
+ WARNING MESSAGE
+ ================================ */
+.delete-branch p[style*="orange"] {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: var(--gh-spacing-md) 0 0 0;
+  padding: var(--gh-spacing-sm) var(--gh-spacing-md);
+  background: #fff8c5;
+  border: 1px solid #d4a72c;
+  border-radius: var(--gh-radius);
+  font-size: 13px;
+  color: #6a5306 !important;
+}
+
+.delete-branch p[style*="orange"]::before {
+  content: "⚠️";
+}
+
+/* ================================
+ SUBMIT BUTTON WRAPPER (WordPress)
+ ================================ */
+.submit {
+  margin: 0;
+  padding: var(--gh-spacing-lg);
+  border-top: 1px solid var(--gh-border-muted);
+  background: var(--gh-bg-secondary);
+}
+
+/* ================================
+ SECTION SPECIFIC COLORS (h2 accents)
+ ================================ */
+.pull-section h2::before {
+  background: var(--gh-accent-green);
+}
+.commit-section h2::before {
+  background: var(--gh-accent-orange);
+}
+.push-section h2::before {
+  background: var(--gh-accent-purple);
+}
+.delete-branch h2::before {
+  background: var(--gh-btn-danger);
+}
+.create-branch h2::before {
+  background: var(--gh-accent-green);
+}
+.merge-branch h2::before {
+  background: var(--gh-accent-blue);
+}
+
+/* ================================
+ HOVER EFFECTS & ANIMATIONS
+ ================================ */
+.common-wrapper .button:active,
+.common-wrapper .button-primary:active,
+.common-wrapper .button-danger:active {
+  transform: translateY(1px);
+}
+
+/* Section hover highlight */
+.pull-section:hover,
+.commit-section:hover,
+.push-section:hover,
+.repo-dd-wrapper:hover,
+.merge-branch:hover,
+.delete-branch:hover,
+.remote-info:hover,
+.repo-status:hover {
+  background: rgba(246, 248, 250, 0.5);
+}
+
+/* ================================
+ SCROLLBAR STYLING (for pre)
+ ================================ */
+.common-wrapper pre::-webkit-scrollbar {
   height: 8px;
 }
 
-.remote-info pre::-webkit-scrollbar-track {
-  background: var(--color-bg-secondary);
-  border-radius: var(--spacing-xs);
+.common-wrapper pre::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 4px;
 }
 
-.remote-info pre::-webkit-scrollbar-thumb {
-  background: var(--color-border);
-  border-radius: var(--spacing-xs);
+.common-wrapper pre::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 4px;
 }
 
-.remote-info pre::-webkit-scrollbar-thumb:hover {
-  background: #afb8c1;
+.common-wrapper pre::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.5);
 }
 
-/* ========================================
-     Animation
-  ======================================== */
-@keyframes spinner {
-  to {
-    transform: rotate(360deg);
-  }
+/* ================================
+ SETTINGS ERRORS (WordPress)
+ ================================ */
+.wrap .notice,
+.wrap .updated,
+.wrap .error {
+  border-radius: var(--gh-radius);
+  border-left-width: 4px;
+  margin: 0 0 var(--gh-spacing-lg) 0;
+  padding: var(--gh-spacing-sm) var(--gh-spacing-md);
+}
+
+.wrap .updated,
+.wrap .notice-success {
+  background: rgba(26, 127, 55, 0.1);
+  border-left-color: var(--gh-accent-green);
+}
+
+.wrap .error,
+.wrap .notice-error {
+  background: rgba(207, 34, 46, 0.1);
+  border-left-color: var(--gh-btn-danger);
 }

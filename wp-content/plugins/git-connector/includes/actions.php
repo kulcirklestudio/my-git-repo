@@ -210,6 +210,13 @@ add_action('admin_init', function () {
         // ✅ Safe delete
         $result = run_git_command($path, 'branch -d ' . escapeshellarg($branch));
 
+        add_settings_error(
+            'git_plugin',
+            'delete_result',
+            implode("\n", $result['output']),
+            $result['status'] === 0 ? 'updated' : 'error'
+        );
+
         $delete_remote = isset($_POST['delete_remote']);
 
         if ($delete_remote) {
@@ -231,13 +238,6 @@ add_action('admin_init', function () {
                 $remote_result['status'] === 0 ? 'updated' : 'error'
             );
         }
-
-        add_settings_error(
-            'git_plugin',
-            'delete_result',
-            implode("\n", $result['output']),
-            $result['status'] === 0 ? 'updated' : 'error'
-        );
     }
 
 });

@@ -73,7 +73,7 @@ function render_git_settings_page()
         <?php settings_errors(); ?>
 
         <div class="repo-info common-wrapper">
-            <p class="sec-title">Git Plugin Settings</p>
+            <p class="sec-title">Repository Information</p>
             <!-- REMOTE INFO -->
             <div class="remote-info">
                 <h2>Remote</h2>
@@ -108,7 +108,7 @@ function render_git_settings_page()
         <?php if ($path): ?>
 
             <div class="branch-status common-wrapper">
-                <p class="sec-title">Git Plugin Settings</p>
+                <p class="sec-title">Branch Status</p>
                 <!-- CURRENT BRANCH + TEST -->
                 <div class="current_branch_wrapper">
                     <div><strong>Current Branch:</strong>
@@ -140,7 +140,7 @@ function render_git_settings_page()
             </div>
 
             <div class="quick-action common-wrapper">
-                <p class="sec-title">Git Plugin Settings</p>
+                <p class="sec-title">Quick Action</p>
                 <!-- Pull Section -->
                 <div class="pull-section">
                     <h2>Pull Latest Changes</h2>
@@ -189,7 +189,7 @@ function render_git_settings_page()
             </div>
 
             <div class="branch-management common-wrapper">
-                <p class="sec-title">Git Plugin Settings</p>
+                <p class="sec-title">Branch Management</p>
                 <!-- BRANCH SWITCH -->
                 <div class="repo-dd-wrapper">
                     <h2>Switch Branch</h2>

@@ -108,6 +108,7 @@ function render_git_settings_page()
                 </form>
             </div>
 
+            <!-- Repo status -->
             <div class="repo-status">
                 <h2>Repository Status</h2>
 
@@ -119,6 +120,7 @@ function render_git_settings_page()
                 <?php endif; ?>
             </div>
 
+            <!-- Commit Section -->
             <div class="commit-section">
                 <h2>Commit Changes</h2>
 
@@ -137,6 +139,7 @@ function render_git_settings_page()
                 <?php endif; ?>
             </div>
 
+            <!-- Pull Section -->
             <div class="pull-section">
                 <h2>Pull Latest Changes</h2>
 
@@ -149,6 +152,7 @@ function render_git_settings_page()
                 </form>
             </div>
 
+            <!-- Push Section -->
             <div class="push-section">
                 <h2>Push Changes</h2>
 
@@ -182,6 +186,7 @@ function render_git_settings_page()
                 </form>
             </div>
 
+            <!-- Merge Section -->
             <div class="merge-branch">
                 <h2>Merge Branch</h2>
 
@@ -204,6 +209,7 @@ function render_git_settings_page()
                 </form>
             </div>
 
+            <!-- Create Branch Section -->
             <div class="create-branch repo-dd-wrapper">
                 <h2>Create Branch</h2>
 

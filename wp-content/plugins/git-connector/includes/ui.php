@@ -210,7 +210,7 @@ function render_git_settings_page()
             </div>
 
             <!-- Delete Branch Section -->
-            <div class="delete-branch">
+            <div class="delete-branch repo-dd-wrapper">
                 <h2>Delete Branch</h2>
 
                 <?php
@@ -238,7 +238,7 @@ function render_git_settings_page()
                         <?php endforeach; ?>
                     </select>
 
-                    <label>
+                    <label class="delete-remote-chkbx">
                         <input type="checkbox" name="delete_remote" value="1">
                         Also delete from remote
                     </label>

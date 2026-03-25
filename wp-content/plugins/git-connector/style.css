@@ -367,6 +367,7 @@
      Input & Select Styles
   ======================================== */
 .form-table .regular-text,
+.delete_branch select[name="delete_branch"],
 .merge-branch select[name="merge_branch"],
 .repo-dd-wrapper select[name="branch"] {
   padding: 5px 12px;
@@ -387,6 +388,7 @@
   font-family: var(--font-family-mono);
 }
 
+.delete-branch select[name="delete_branch"],
 .merge-branch select[name="merge_branch"],
 .repo-dd-wrapper select[name="branch"] {
   flex: 1;
@@ -395,17 +397,20 @@
 }
 
 .form-table .regular-text:hover,
+.delete-branch select[name="delete_branch"]:hover,
 .merge-branch select[name="merge_branch"]:hover,
 .repo-dd-wrapper select[name="branch"]:hover {
   border-color: var(--color-border-hover);
 }
 
+.delete-branch select[name="delete_branch"]:hover,
 .merge-branch select[name="merge_branch"]:hover,
 .repo-dd-wrapper select[name="branch"]:hover {
   background-color: var(--color-bg-primary);
 }
 
 .form-table .regular-text:focus,
+.delete-branch select[name="delete_branch"]:focus,
 .merge-branch
   select[name="merge_branch"]:focus
   .repo-dd-wrapper
@@ -502,6 +507,7 @@
 }
 
 /* Info/Status Messages */
+.delete-remote-chkbx,
 .repo-status p,
 .commit-section p {
   margin: 0;

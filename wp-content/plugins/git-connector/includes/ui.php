@@ -214,9 +214,7 @@ function render_git_settings_page()
                 <h2>Delete Branch</h2>
 
                 <?php
-                print_r($branches);
                 $default_branch = git_get_default_branch($path);
-                echo $default_branch.'  ---- Getting branch default';
                 $current = run_git_command($path, 'branch --show-current');
                 $current_branch = $current['output'][0] ?? '';
                 ?>

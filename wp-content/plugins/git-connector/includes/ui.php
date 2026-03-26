@@ -350,8 +350,10 @@ function render_git_settings_page()
                     </p>
 
                     <pre style="background:#111;color:#0f0;padding:10px;overflow:auto;">
-                                                                        <?php echo esc_html(implode("\n", $log['output'])); ?>
-                                                                                </pre>
+                        <?php
+                        echo esc_html(implode("\n", $log['output']));
+                        ?>
+                    </pre>
 
                     <p>
                         Status:

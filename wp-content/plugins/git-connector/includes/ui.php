@@ -64,15 +64,6 @@ function render_git_settings_page()
         $status_result = run_git_command($path, 'status --porcelain');
         $repo_status = $status_result['output'];
     }
-
-    $result = run_git_command($path, 'push');
-
-    git_set_last_log([
-        'command' => 'git push',
-        'output' => $result['output'],
-        'status' => $result['status'],
-    ]);
-
     ?>
 
     <div class="wrap">
@@ -334,39 +325,6 @@ function render_git_settings_page()
 
                 </div>
 
-            </div>
-
-            <div class="git-logs">
-                <h2>Git Logs</h2>
-
-                <?php
-                $log = git_get_last_log();
-
-                if ($log):
-                    ?>
-
-                    <p><strong>Command:</strong>
-                        <?php echo esc_html($log['command']); ?>
-                    </p>
-
-                    <pre style="background:#111;color:#0f0;padding:10px;overflow:auto;">
-                        <?php
-                        echo esc_html(implode("\n", $log['output']));
-                        ?>
-                    </pre>
-
-                    <p>
-                        Status:
-                        <strong style="color: <?php echo $log['status'] === 0 ? 'green' : 'red'; ?>">
-                            <?php echo $log['status'] === 0 ? 'Success' : 'Error'; ?>
-                        </strong>
-                    </p>
-
-                <?php else: ?>
-
-                    <p>No logs yet.</p>
-
-                <?php endif; ?>
             </div>
         <?php endif; ?>
 

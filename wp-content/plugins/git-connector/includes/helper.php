@@ -53,13 +53,3 @@ function git_get_default_branch($path)
 
     return 'main'; // fallback (safe guess)
 }
-
-function git_set_last_log($data)
-{
-    set_transient('git_last_log', $data, 60); // 1 min
-}
-
-function git_get_last_log()
-{
-    return get_transient('git_last_log');
-}

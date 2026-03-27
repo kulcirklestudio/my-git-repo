@@ -415,11 +415,7 @@ function git_plugin_slugify_ref($value)
 function git_plugin_create_backup_branch($path, $reason, $source_ref = 'HEAD')
 {
     $name = 'backup/' . gmdate('Ymd-His') . '-' . git_plugin_slugify_ref($reason);
-
-    $result = run_git_command(
-        $path,
-        'branch ' . escapeshellarg($name) . ' ' . escapeshellarg($source_ref)
-    );
+    $result = run_git_command($path, 'branch ' . escapeshellarg($name) . ' ' . escapeshellarg($source_ref));
 
     return [
         'name' => $name,
@@ -663,21 +659,4 @@ function git_plugin_render_health_summary($report)
     }
 
     return trim(implode("\n", $lines));
-}
-
-function git_plugin_get_ahead_behind_summary($path)
-{
-    $result = run_git_command($path, 'rev-list --left-right --count HEAD...@{u}');
-
-    if ($result['status'] !== 0 || empty($result['output'][0])) {
-        return '';
-    }
-
-    $parts = preg_split('/\s+/', trim($result['output'][0]));
-
-    if (count($parts) !== 2) {
-        return '';
-    }
-
-    return 'Ahead: ' . $parts[0] . ', Behind: ' . $parts[1];
 }

@@ -100,102 +100,29 @@ function git_plugin_handle_health_check()
     git_plugin_finish_action('health_check', 'success', git_plugin_render_health_summary($report), 'updated', $path ?: '');
 }
 
-function git_plugin_handle_preview_pull()
+function git_plugin_handle_backup_current_branch()
 {
     $path = git_get_valid_repo_path();
 
     if (!$path) {
-        return;
-    }
-
-    if (!git_has_remote($path)) {
-        git_plugin_finish_action('preview_pull', 'failed', 'No remote repository is connected yet.', 'error', $path);
-        return;
-    }
-
-    $remote_name = git_get_primary_remote($path);
-    $dry_run = run_git_command($path, 'fetch --dry-run ' . escapeshellarg($remote_name));
-    $message = git_plugin_format_result_message($dry_run, 'Pull preview completed.', 'Pull preview failed.');
-    $ahead_behind = git_plugin_get_ahead_behind_summary($path);
-
-    if ($ahead_behind !== '') {
-        $message .= "\n\n" . $ahead_behind;
-    }
-
-    git_plugin_finish_action('preview_pull', $dry_run['status'] === 0 ? 'success' : 'failed', $message, $dry_run['status'] === 0 ? 'updated' : 'error', $path);
-}
-
-function git_plugin_handle_preview_merge()
-{
-    $path = git_get_valid_repo_path();
-
-    if (!$path) {
-        return;
-    }
-
-    $branch = git_validate_branch_name($path, sanitize_text_field(wp_unslash($_POST['merge_branch'] ?? '')));
-
-    if (!$branch) {
-        return;
-    }
-
-    if (!git_branch_exists($path, $branch)) {
-        git_plugin_finish_action('preview_merge', 'failed', 'Selected branch does not exist.', 'error', $path);
         return;
     }
 
     $current_branch = git_get_current_branch($path);
-    $merged_check = run_git_command($path, 'merge-base --is-ancestor ' . escapeshellarg($branch) . ' HEAD');
-    $incoming = run_git_command($path, 'log --oneline HEAD..' . escapeshellarg($branch) . ' -n 20');
 
-    $lines = [
-        'Merge preview into "' . $current_branch . '" from "' . $branch . '".',
-        $merged_check['status'] === 0 ? 'Branch is already merged into the current branch.' : 'Branch still has commits not merged into the current branch.',
-    ];
-
-    if (!empty($incoming['output'])) {
-        $lines[] = '';
-        $lines[] = 'Incoming commits:';
-        $lines = array_merge($lines, $incoming['output']);
-    }
-
-    git_plugin_finish_action('preview_merge', 'success', implode("\n", $lines), 'updated', $path);
-}
-
-function git_plugin_handle_preview_delete()
-{
-    $path = git_get_valid_repo_path();
-
-    if (!$path) {
+    if ($current_branch === '') {
+        git_plugin_finish_action('backup_branch', 'failed', 'Could not detect the current branch.', 'error', $path);
         return;
     }
 
-    $branch = git_validate_branch_name($path, sanitize_text_field(wp_unslash($_POST['delete_branch'] ?? '')));
+    $backup = git_plugin_create_backup_branch($path, 'manual-' . $current_branch, 'HEAD');
 
-    if (!$branch) {
+    if ($backup['result']['status'] !== 0) {
+        git_plugin_finish_action('backup_branch', 'failed', git_plugin_format_result_message($backup['result'], '', 'Backup branch creation failed.'), 'error', $path);
         return;
     }
 
-    if (!git_branch_exists($path, $branch)) {
-        git_plugin_finish_action('preview_delete', 'failed', 'Selected branch does not exist.', 'error', $path);
-        return;
-    }
-
-    $current_branch = git_get_current_branch($path);
-    $default_branch = git_get_default_branch($path);
-    $merged_check = run_git_command($path, 'merge-base --is-ancestor ' . escapeshellarg($branch) . ' ' . escapeshellarg($current_branch));
-    $remote_name = git_get_primary_remote($path);
-    $remote_branch = $remote_name !== '' ? run_git_command($path, 'ls-remote --heads ' . escapeshellarg($remote_name) . ' ' . escapeshellarg($branch)) : ['output' => [], 'status' => 0];
-
-    $lines = [
-        'Delete preview for "' . $branch . '".',
-        $branch === $current_branch ? 'This is the active branch and cannot be deleted.' : 'This is not the active branch.',
-        ($default_branch !== '' && $branch === $default_branch) ? 'This is the default branch and is protected.' : 'This is not the detected default branch.',
-        $merged_check['status'] === 0 ? 'Branch is merged into the current branch.' : 'Branch is not merged into the current branch.',
-        !empty($remote_branch['output']) ? 'Remote branch exists and can also be deleted.' : 'No matching remote branch was found.',
-    ];
-
-    git_plugin_finish_action('preview_delete', 'success', implode("\n", $lines), 'updated', $path);
+    git_plugin_finish_action('backup_branch', 'success', 'Created backup branch "' . $backup['name'] . '" from "' . $current_branch . '".', 'updated', $path);
 }
 
 add_action('admin_init', function () {
@@ -218,6 +145,13 @@ add_action('admin_init', function () {
     }
 
     if (
+        isset($_POST['git_backup_branch'], $_POST['git_backup_branch_nonce']) &&
+        wp_verify_nonce(sanitize_text_field(wp_unslash($_POST['git_backup_branch_nonce'])), 'git_backup_branch_action')
+    ) {
+        git_plugin_handle_backup_current_branch();
+    }
+
+    if (
         isset($_POST['test_git_repo'], $_POST['test_git_repo_nonce']) &&
         wp_verify_nonce(sanitize_text_field(wp_unslash($_POST['test_git_repo_nonce'])), 'test_git_repo_action')
     ) {
@@ -229,27 +163,6 @@ add_action('admin_init', function () {
 
         $result = run_git_command($path, 'status');
         git_plugin_finish_action('debug_repo', $result['status'] === 0 ? 'success' : 'failed', git_plugin_format_result_message($result, 'Repository debug completed.', 'Repository debug failed.'), $result['status'] === 0 ? 'updated' : 'error', $path);
-    }
-
-    if (
-        isset($_POST['git_preview_pull'], $_POST['git_preview_pull_nonce']) &&
-        wp_verify_nonce(sanitize_text_field(wp_unslash($_POST['git_preview_pull_nonce'])), 'git_preview_pull_action')
-    ) {
-        git_plugin_handle_preview_pull();
-    }
-
-    if (
-        isset($_POST['git_preview_merge'], $_POST['git_preview_merge_nonce']) &&
-        wp_verify_nonce(sanitize_text_field(wp_unslash($_POST['git_preview_merge_nonce'])), 'git_preview_merge_action')
-    ) {
-        git_plugin_handle_preview_merge();
-    }
-
-    if (
-        isset($_POST['git_preview_delete'], $_POST['git_preview_delete_nonce']) &&
-        wp_verify_nonce(sanitize_text_field(wp_unslash($_POST['git_preview_delete_nonce'])), 'git_preview_delete_action')
-    ) {
-        git_plugin_handle_preview_delete();
     }
 
     if (
@@ -453,15 +366,6 @@ add_action('admin_init', function () {
             return;
         }
 
-        $backup = git_plugin_create_backup_branch($path, 'before-merge-' . $branch, 'HEAD');
-
-        if ($backup['result']['status'] !== 0) {
-            git_plugin_finish_action('merge', 'failed', git_plugin_format_result_message($backup['result'], '', 'Could not create a safety backup before merge.'), 'error', $path);
-            return;
-        }
-
-        git_plugin_finish_action('merge', 'success', 'Created safety backup branch "' . $backup['name'] . '" before merge.', 'updated', $path);
-
         $result = run_git_command($path, 'merge ' . escapeshellarg($branch));
         git_plugin_finish_action('merge', $result['status'] === 0 ? 'success' : 'failed', git_plugin_format_result_message($result, 'Merge completed.', 'Merge failed.'), $result['status'] === 0 ? 'updated' : 'error', $path);
     }
@@ -505,15 +409,6 @@ add_action('admin_init', function () {
             git_plugin_finish_action('delete_branch', 'failed', 'Cannot delete the default branch.', 'error', $path);
             return;
         }
-
-        $backup = git_plugin_create_backup_branch($path, 'before-delete-' . $branch, $branch);
-
-        if ($backup['result']['status'] !== 0) {
-            git_plugin_finish_action('delete_branch', 'failed', git_plugin_format_result_message($backup['result'], '', 'Could not create a safety backup before delete.'), 'error', $path);
-            return;
-        }
-
-        git_plugin_finish_action('delete_branch', 'success', 'Created safety backup branch "' . $backup['name'] . '" before deletion.', 'updated', $path);
 
         $result = run_git_command($path, 'branch -d ' . escapeshellarg($branch));
         git_plugin_finish_action('delete_branch', $result['status'] === 0 ? 'success' : 'failed', git_plugin_format_result_message($result, 'Branch deleted.', 'Branch deletion failed.'), $result['status'] === 0 ? 'updated' : 'error', $path);

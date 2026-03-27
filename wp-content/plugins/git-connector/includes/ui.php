@@ -7,7 +7,7 @@ function render_git_settings_page()
     $path = git_plugin_resolve_local_path($saved_path);
     $is_repo = $path ? git_is_git_repository($path) : false;
     $health_report = git_plugin_get_health_report();
-    $activity_log = git_plugin_get_activity_log();
+    $activity_log = array_slice(git_plugin_get_activity_log(), 0, 8);
 
     $current_branch = 'N/A';
     $branches = [];
@@ -33,21 +33,41 @@ function render_git_settings_page()
     }
     ?>
 
-    <div class="wrap">
-        <h1>Git Plugin Settings</h1>
+    <div class="wrap git-plugin-app">
+        <div class="hero-card">
+            <div class="hero-copy">
+                <p class="eyebrow">Git Connect</p>
+                <h1>Manage your repository without using the terminal</h1>
+                <p class="hero-text">Set the local folder and remote URL once, then use the guided actions below for commit, pull, push, branch switching, merging, deleting, and manual backup.</p>
+            </div>
+            <div class="hero-status">
+                <div class="status-pill <?php echo esc_attr($is_repo ? 'is-ready' : 'is-pending'); ?>">
+                    <?php echo esc_html($is_repo ? 'Repository Ready' : 'Setup Needed'); ?>
+                </div>
+                <div class="status-meta">
+                    <span>Branch: <?php echo esc_html($current_branch !== '' ? $current_branch : 'unknown'); ?></span>
+                    <span>Remote: <?php echo esc_html($primary_remote !== '' ? $primary_remote : 'not connected'); ?></span>
+                </div>
+            </div>
+        </div>
 
         <?php settings_errors(); ?>
 
-        <div class="repo-info common-wrapper">
-            <p class="sec-title">Repository Information</p>
+        <div class="dashboard-grid">
+            <div class="main-column">
+                <section class="panel-card">
+                    <div class="panel-head">
+                        <div>
+                            <p class="panel-kicker">Step 1</p>
+                            <h2>Connect Repository</h2>
+                        </div>
+                    </div>
 
-            <form method="post" action="options.php">
-                <?php settings_fields('git_plugin_settings_group'); ?>
+                    <form method="post" action="options.php" class="stack-form">
+                        <?php settings_fields('git_plugin_settings_group'); ?>
 
-                <table class="form-table">
-                    <tr>
-                        <th>Local Repository Path</th>
-                        <td>
+                        <label class="field-block">
+                            <span class="field-label">Local Repository Path</span>
                             <div class="secure-input-row">
                                 <input
                                     type="password"
@@ -60,13 +80,11 @@ function render_git_settings_page()
                                     autocomplete="off">
                                 <button type="button" class="button button-secondary git-plugin-toggle-sensitive">Show</button>
                             </div>
-                            <p class="description">Choose an existing local folder. It can already be a Git repo or an empty folder for first-time setup.</p>
-                            <p class="description">Stored encrypted in the database and hidden on this page by default.</p>
-                        </td>
-                    </tr>
-                    <tr>
-                        <th>Remote Repository URL</th>
-                        <td>
+                            <span class="field-help">Stored encrypted in the database and hidden on this page by default.</span>
+                        </label>
+
+                        <label class="field-block">
+                            <span class="field-label">Remote Repository URL</span>
                             <div class="secure-input-row">
                                 <input
                                     type="password"
@@ -79,277 +97,276 @@ function render_git_settings_page()
                                     autocomplete="off">
                                 <button type="button" class="button button-secondary git-plugin-toggle-sensitive">Show</button>
                             </div>
-                            <p class="description">Examples: HTTPS URL, SSH URL, or a local bare repository path.</p>
-                            <p class="description">Stored encrypted in the database and hidden on this page by default.</p>
-                        </td>
-                    </tr>
-                    <tr>
-                        <th>Protected Branch Policy</th>
-                        <td>
-                            <label class="settings-checkbox">
-                                <input type="hidden" name="git_plugin_allow_protected_direct_changes" value="0">
-                                <input type="checkbox" name="git_plugin_allow_protected_direct_changes" value="1" <?php checked($allow_protected_direct_changes); ?>>
-                                Allow direct commits and pushes on `main` / `master`
-                            </label>
-                            <p class="description">Leave this off to force safer workflows on protected branches.</p>
-                        </td>
-                    </tr>
-                </table>
+                            <span class="field-help">Use HTTPS, SSH, or a local bare repository path.</span>
+                        </label>
 
-                <?php submit_button('Save Connection Settings'); ?>
-            </form>
+                        <label class="toggle-card">
+                            <input type="hidden" name="git_plugin_allow_protected_direct_changes" value="0">
+                            <input type="checkbox" name="git_plugin_allow_protected_direct_changes" value="1" <?php checked($allow_protected_direct_changes); ?>>
+                            <span>
+                                <strong>Allow direct commits and pushes on `main` / `master`</strong>
+                                <small>Keep this off for safer beginner workflows.</small>
+                            </span>
+                        </label>
 
-            <div class="connection-overview">
-                <h2>Connection Status</h2>
+                        <?php submit_button('Save Settings'); ?>
+                    </form>
 
-                <?php if (!$saved_path): ?>
-                    <div class="notice notice-warning"><p>Set a local path before using Git actions.</p></div>
-                <?php elseif (!$path): ?>
-                    <div class="notice notice-error"><p>The saved local path does not exist on this server.</p></div>
-                <?php elseif (!$is_repo): ?>
-                    <div class="notice notice-warning"><p>This folder exists but is not a Git repository yet. Use the connect button to initialize it and attach the remote.</p></div>
-                <?php else: ?>
-                    <p><strong>Primary Remote:</strong> <?php echo esc_html($primary_remote !== '' ? $primary_remote : 'Not connected'); ?></p>
+                    <div class="action-strip">
+                        <form method="post">
+                            <?php wp_nonce_field('git_connect_remote_action', 'git_connect_remote_nonce'); ?>
+                            <button type="submit" name="git_connect_remote" class="button button-primary">
+                                <?php echo esc_html($is_repo ? 'Connect or Update Remote' : 'Initialize and Connect'); ?>
+                            </button>
+                        </form>
 
-                    <?php if (empty($remote_output)): ?>
-                        <div class="notice notice-warning"><p>No remote repository is currently configured.</p></div>
+                        <form method="post">
+                            <?php wp_nonce_field('git_health_check_action', 'git_health_check_nonce'); ?>
+                            <button type="submit" name="git_health_check" class="button button-secondary">Run Health Check</button>
+                        </form>
+                    </div>
+                </section>
+
+                <section class="panel-card">
+                    <div class="panel-head">
+                        <div>
+                            <p class="panel-kicker">Step 2</p>
+                            <h2>Current Status</h2>
+                        </div>
+                    </div>
+
+                    <div class="summary-grid">
+                        <div class="summary-tile">
+                            <span class="summary-label">Local Folder</span>
+                            <strong><?php echo esc_html($path ? $path : 'Not available'); ?></strong>
+                        </div>
+                        <div class="summary-tile">
+                            <span class="summary-label">Current Branch</span>
+                            <strong><?php echo esc_html($current_branch !== '' ? $current_branch : 'unknown'); ?></strong>
+                        </div>
+                        <div class="summary-tile">
+                            <span class="summary-label">Default Branch</span>
+                            <strong><?php echo esc_html($default_branch !== '' ? $default_branch : 'unknown'); ?></strong>
+                        </div>
+                        <div class="summary-tile">
+                            <span class="summary-label">Connected Remote</span>
+                            <strong><?php echo esc_html($primary_remote !== '' ? $primary_remote : 'Not connected'); ?></strong>
+                        </div>
+                    </div>
+
+                    <?php if (!$saved_path): ?>
+                        <div class="notice notice-warning"><p>Save the local path first.</p></div>
+                    <?php elseif (!$path): ?>
+                        <div class="notice notice-error"><p>The saved local path does not exist on this server.</p></div>
+                    <?php elseif (!$is_repo): ?>
+                        <div class="notice notice-warning"><p>This folder exists but is not a Git repository yet. Use the connect button above to initialize it.</p></div>
                     <?php else: ?>
-                        <pre><?php echo esc_html(implode("\n", $remote_output)); ?></pre>
+                        <?php if (git_is_protected_branch($current_branch) && !$allow_protected_direct_changes): ?>
+                            <div class="notice notice-warning"><p>Protected branch mode is active. Direct commit and push on this branch are blocked.</p></div>
+                        <?php endif; ?>
+
+                        <div class="subpanel">
+                            <h3>Remote Details</h3>
+                            <?php if (empty($remote_output)): ?>
+                                <p class="empty-state">No remote repository is currently configured.</p>
+                            <?php else: ?>
+                                <pre><?php echo esc_html(implode("\n", $remote_output)); ?></pre>
+                            <?php endif; ?>
+
+                            <?php if ($remote_url !== '' && $connected_remote_name !== ''): ?>
+                                <p class="inline-success">Saved remote URL is already connected as <strong><?php echo esc_html($connected_remote_name); ?></strong>.</p>
+                            <?php elseif ($remote_url !== '' && !empty($remote_output)): ?>
+                                <p class="inline-warning">A remote exists, but it does not match the saved remote URL yet.</p>
+                            <?php endif; ?>
+                        </div>
+
+                        <div class="subpanel">
+                            <h3>Repository Changes</h3>
+                            <?php if (empty($repo_status)): ?>
+                                <p class="clean-state">Clean working tree.</p>
+                            <?php else: ?>
+                                <pre><?php echo esc_html(implode("\n", $repo_status)); ?></pre>
+                            <?php endif; ?>
+                        </div>
                     <?php endif; ?>
+                </section>
 
-                    <?php if ($remote_url !== '' && $connected_remote_name !== ''): ?>
-                        <p class="connection-success">Saved remote URL is already connected as <strong><?php echo esc_html($connected_remote_name); ?></strong>.</p>
-                    <?php elseif ($remote_url !== '' && !empty($remote_output)): ?>
-                        <p class="connection-warning">A remote is configured, but it does not match the saved remote URL yet.</p>
-                    <?php endif; ?>
-                <?php endif; ?>
-
-                <div class="action-row">
-                    <form method="post" class="connect-form">
-                        <?php wp_nonce_field('git_connect_remote_action', 'git_connect_remote_nonce'); ?>
-                        <button type="submit" name="git_connect_remote" class="button button-primary">
-                            <?php echo esc_html($is_repo ? 'Connect or Update Remote' : 'Initialize and Connect'); ?>
-                        </button>
-                    </form>
-
-                    <form method="post" class="connect-form">
-                        <?php wp_nonce_field('git_health_check_action', 'git_health_check_nonce'); ?>
-                        <button type="submit" name="git_health_check" class="button button-secondary">Run Health Check</button>
-                    </form>
-                </div>
-            </div>
-        </div>
-
-        <div class="health-report common-wrapper">
-            <p class="sec-title">Health Check</p>
-            <div class="health-check-body">
-                <?php if (!empty($health_report['checks'])): ?>
-                    <p class="description">Last generated: <?php echo esc_html($health_report['generated_at'] ?? 'unknown'); ?></p>
-                    <div class="health-grid">
-                        <?php foreach ($health_report['checks'] as $check): ?>
-                            <div class="health-card health-<?php echo esc_attr($check['status']); ?>">
-                                <h3><?php echo esc_html($check['label']); ?></h3>
-                                <p class="health-status"><?php echo esc_html(strtoupper($check['status'])); ?></p>
-                                <pre><?php echo esc_html($check['details']); ?></pre>
+                <?php if ($is_repo): ?>
+                    <section class="panel-card">
+                        <div class="panel-head">
+                            <div>
+                                <p class="panel-kicker">Step 3</p>
+                                <h2>Daily Actions</h2>
                             </div>
-                        <?php endforeach; ?>
-                    </div>
-                <?php else: ?>
-                    <p>No health report generated yet.</p>
+                        </div>
+
+                        <div class="action-group">
+                            <div class="task-card">
+                                <h3>Pull Latest Changes</h3>
+                                <p>Bring the newest changes from the connected remote branch.</p>
+                                <form method="post">
+                                    <?php wp_nonce_field('git_pull_action', 'git_pull_nonce'); ?>
+                                    <button type="submit" name="git_pull" class="button button-primary">Pull from Remote</button>
+                                </form>
+                            </div>
+
+                            <div class="task-card">
+                                <h3>Commit Changes</h3>
+                                <p>Save your current local modifications into Git.</p>
+                                <?php if (empty($repo_status)): ?>
+                                    <p class="empty-state">No changes to commit.</p>
+                                <?php else: ?>
+                                    <form method="post" class="task-form">
+                                        <?php wp_nonce_field('git_commit_action', 'git_commit_nonce'); ?>
+                                        <input type="text" name="commit_message" placeholder="Enter commit message" required>
+                                        <button type="submit" name="git_commit" class="button button-primary">Commit</button>
+                                    </form>
+                                <?php endif; ?>
+                            </div>
+
+                            <div class="task-card">
+                                <h3>Push Changes</h3>
+                                <p>Send your local commits to the connected remote repository.</p>
+                                <form method="post">
+                                    <?php wp_nonce_field('git_push_action', 'git_push_nonce'); ?>
+                                    <button type="submit" name="git_push" class="button button-primary">Push to Remote</button>
+                                </form>
+                            </div>
+
+                            <div class="task-card">
+                                <h3>Backup Current Branch</h3>
+                                <p>Create a backup branch from the current branch before you do risky work.</p>
+                                <form method="post">
+                                    <?php wp_nonce_field('git_backup_branch_action', 'git_backup_branch_nonce'); ?>
+                                    <button type="submit" name="git_backup_branch" class="button button-secondary">Create Backup Branch</button>
+                                </form>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section class="panel-card">
+                        <div class="panel-head">
+                            <div>
+                                <p class="panel-kicker">Step 4</p>
+                                <h2>Branch Management</h2>
+                            </div>
+                        </div>
+
+                        <div class="action-group branch-group">
+                            <div class="task-card">
+                                <h3>Switch Branch</h3>
+                                <form method="post" class="task-form">
+                                    <?php wp_nonce_field('select_branch_action', 'select_branch_nonce'); ?>
+                                    <select name="branch">
+                                        <?php foreach ($branches as $branch): ?>
+                                            <option value="<?php echo esc_attr($branch); ?>" <?php selected($branch, $current_branch); ?>><?php echo esc_html($branch); ?></option>
+                                        <?php endforeach; ?>
+                                    </select>
+                                    <button type="submit" name="switch_branch" class="button">Switch</button>
+                                </form>
+                            </div>
+
+                            <div class="task-card">
+                                <h3>Create Branch</h3>
+                                <form method="post" class="task-form">
+                                    <?php wp_nonce_field('git_create_branch_action', 'git_create_branch_nonce'); ?>
+                                    <input type="text" name="new_branch" placeholder="Enter new branch name" required>
+                                    <button type="submit" name="git_create_branch" class="button button-primary">Create & Switch</button>
+                                </form>
+                            </div>
+
+                            <div class="task-card">
+                                <h3>Merge Branch</h3>
+                                <p>Merge another branch into the branch you are currently on.</p>
+                                <form method="post" class="task-form">
+                                    <?php wp_nonce_field('git_merge_branch_action', 'git_merge_branch_nonce'); ?>
+                                    <select name="merge_branch">
+                                        <?php foreach ($branches as $branch): ?>
+                                            <?php if ($branch !== $current_branch): ?>
+                                                <option value="<?php echo esc_attr($branch); ?>"><?php echo esc_html($branch); ?></option>
+                                            <?php endif; ?>
+                                        <?php endforeach; ?>
+                                    </select>
+                                    <button type="submit" name="git_merge_branch" class="button button-primary">Merge</button>
+                                </form>
+                            </div>
+
+                            <div class="task-card danger-card">
+                                <h3>Delete Branch</h3>
+                                <p>Delete a branch that is not active and not protected.</p>
+                                <form method="post" class="task-form">
+                                    <?php wp_nonce_field('git_delete_branch_action', 'git_delete_branch_nonce'); ?>
+                                    <select name="delete_branch">
+                                        <?php foreach ($branches as $branch): ?>
+                                            <?php if ($branch === $current_branch || ($default_branch !== '' && $branch === $default_branch)) { continue; } ?>
+                                            <option value="<?php echo esc_attr($branch); ?>"><?php echo esc_html($branch); ?></option>
+                                        <?php endforeach; ?>
+                                    </select>
+                                    <label class="delete-remote-chkbx">
+                                        <input type="checkbox" name="delete_remote" value="1">
+                                        Delete from remote too
+                                    </label>
+                                    <button type="submit" name="git_delete_branch" class="button button-danger">Delete</button>
+                                </form>
+                            </div>
+                        </div>
+                    </section>
                 <?php endif; ?>
             </div>
-        </div>
 
-        <?php if ($is_repo): ?>
-            <div class="branch-status common-wrapper">
-                <p class="sec-title">Branch Status</p>
-
-                <div class="current_branch_wrapper">
-                    <div><strong>Current Branch:</strong><p class="active_branch"><?php echo esc_html($current_branch !== '' ? $current_branch : 'unknown'); ?></p></div>
-                    <div><strong>Default Branch:</strong><p class="active_branch default-branch"><?php echo esc_html($default_branch !== '' ? $default_branch : 'unknown'); ?></p></div>
-                    <form method="post">
-                        <?php wp_nonce_field('test_git_repo_action', 'test_git_repo_nonce'); ?>
-                        <input type="hidden" name="test_git_repo" value="1">
-                        <button type="submit" class="button button-secondary">Debug Repository</button>
-                    </form>
-                </div>
-
-                <?php if (git_is_protected_branch($current_branch) && !$allow_protected_direct_changes): ?>
-                    <div class="notice notice-warning"><p>Protected branch policy is active. Direct commits and pushes to this branch are blocked.</p></div>
-                <?php endif; ?>
-
-                <div class="repo-status">
-                    <h2>Repository Status</h2>
-
-                    <?php if (empty($repo_status)): ?>
-                        <p style="color:green;"><strong>Clean (no changes)</strong></p>
-                    <?php else: ?>
-                        <p style="color:red;"><strong>Uncommitted Changes:</strong></p>
-                        <pre><?php echo esc_html(implode("\n", $repo_status)); ?></pre>
-                    <?php endif; ?>
-                </div>
-            </div>
-
-            <div class="quick-action common-wrapper">
-                <p class="sec-title">Quick Action</p>
-
-                <div class="pull-section">
-                    <h2>Pull Latest Changes</h2>
-                    <div class="action-row">
-                        <form method="post">
-                            <?php wp_nonce_field('git_pull_action', 'git_pull_nonce'); ?>
-                            <button type="submit" name="git_pull" class="button button-primary">Pull from Remote</button>
-                        </form>
-                        <form method="post">
-                            <?php wp_nonce_field('git_preview_pull_action', 'git_preview_pull_nonce'); ?>
-                            <button type="submit" name="git_preview_pull" class="button button-secondary">Preview Pull</button>
-                        </form>
+            <aside class="side-column">
+                <section class="panel-card side-card">
+                    <div class="panel-head">
+                        <div>
+                            <p class="panel-kicker">Safety</p>
+                            <h2>Health Check</h2>
+                        </div>
                     </div>
-                </div>
 
-                <div class="commit-section">
-                    <h2>Commit Changes</h2>
-                    <?php if (empty($repo_status)): ?>
-                        <p>No changes to commit</p>
-                    <?php else: ?>
-                        <form method="post">
-                            <?php wp_nonce_field('git_commit_action', 'git_commit_nonce'); ?>
-                            <input type="text" name="commit_message" placeholder="Enter commit message" required>
-                            <button type="submit" name="git_commit" class="button button-primary">Commit</button>
-                        </form>
-                    <?php endif; ?>
-                </div>
-
-                <div class="push-section">
-                    <h2>Push Changes</h2>
-                    <form method="post">
-                        <?php wp_nonce_field('git_push_action', 'git_push_nonce'); ?>
-                        <button type="submit" name="git_push" class="button button-primary">Push to Remote</button>
-                    </form>
-                </div>
-            </div>
-
-            <div class="branch-management common-wrapper">
-                <p class="sec-title">Branch Management</p>
-
-                <div class="repo-dd-wrapper">
-                    <h2>Switch Branch</h2>
-                    <form method="post">
-                        <?php wp_nonce_field('select_branch_action', 'select_branch_nonce'); ?>
-                        <select name="branch">
-                            <?php foreach ($branches as $branch): ?>
-                                <option value="<?php echo esc_attr($branch); ?>" <?php selected($branch, $current_branch); ?>><?php echo esc_html($branch); ?></option>
+                    <?php if (!empty($health_report['checks'])): ?>
+                        <p class="field-help">Last generated: <?php echo esc_html($health_report['generated_at'] ?? 'unknown'); ?></p>
+                        <div class="health-stack">
+                            <?php foreach ($health_report['checks'] as $check): ?>
+                                <div class="health-item health-<?php echo esc_attr($check['status']); ?>">
+                                    <div class="health-top">
+                                        <strong><?php echo esc_html($check['label']); ?></strong>
+                                        <span><?php echo esc_html(strtoupper($check['status'])); ?></span>
+                                    </div>
+                                    <p><?php echo esc_html($check['details']); ?></p>
+                                </div>
                             <?php endforeach; ?>
-                        </select>
-                        <button type="submit" name="switch_branch" class="button">Switch Branch</button>
-                    </form>
-                </div>
-
-                <div class="create-branch repo-dd-wrapper">
-                    <h2>Create Branch</h2>
-                    <form method="post">
-                        <?php wp_nonce_field('git_create_branch_action', 'git_create_branch_nonce'); ?>
-                        <input type="text" name="new_branch" placeholder="Enter branch name" required>
-                        <button type="submit" name="git_create_branch" class="button button-primary">Create & Switch</button>
-                    </form>
-                </div>
-
-                <div class="merge-branch">
-                    <h2>Merge Branch</h2>
-                    <div class="action-row">
-                        <form method="post">
-                            <?php wp_nonce_field('git_merge_branch_action', 'git_merge_branch_nonce'); ?>
-                            <select name="merge_branch">
-                                <?php foreach ($branches as $branch): ?>
-                                    <?php if ($branch !== $current_branch): ?>
-                                        <option value="<?php echo esc_attr($branch); ?>"><?php echo esc_html($branch); ?></option>
-                                    <?php endif; ?>
-                                <?php endforeach; ?>
-                            </select>
-                            <button type="submit" name="git_merge_branch" class="button button-primary">Merge into Current Branch</button>
-                        </form>
-                        <form method="post">
-                            <?php wp_nonce_field('git_preview_merge_action', 'git_preview_merge_nonce'); ?>
-                            <select name="merge_branch">
-                                <?php foreach ($branches as $branch): ?>
-                                    <?php if ($branch !== $current_branch): ?>
-                                        <option value="<?php echo esc_attr($branch); ?>"><?php echo esc_html($branch); ?></option>
-                                    <?php endif; ?>
-                                <?php endforeach; ?>
-                            </select>
-                            <button type="submit" name="git_preview_merge" class="button button-secondary">Preview Merge</button>
-                        </form>
-                    </div>
-                    <p class="description">A safety backup branch is created automatically before merge.</p>
-                </div>
-
-                <div class="delete-branch repo-dd-wrapper">
-                    <h2>Delete Branch</h2>
-                    <div class="action-row">
-                        <form method="post">
-                            <?php wp_nonce_field('git_delete_branch_action', 'git_delete_branch_nonce'); ?>
-                            <select name="delete_branch">
-                                <?php foreach ($branches as $branch): ?>
-                                    <?php if ($branch === $current_branch || ($default_branch !== '' && $branch === $default_branch)) { continue; } ?>
-                                    <option value="<?php echo esc_attr($branch); ?>"><?php echo esc_html($branch); ?></option>
-                                <?php endforeach; ?>
-                            </select>
-                            <label class="delete-remote-chkbx">
-                                <input type="checkbox" name="delete_remote" value="1">
-                                Also delete from remote
-                            </label>
-                            <button type="submit" name="git_delete_branch" class="button button-danger">Delete Branch</button>
-                        </form>
-                        <form method="post">
-                            <?php wp_nonce_field('git_preview_delete_action', 'git_preview_delete_nonce'); ?>
-                            <select name="delete_branch">
-                                <?php foreach ($branches as $branch): ?>
-                                    <?php if ($branch === $current_branch || ($default_branch !== '' && $branch === $default_branch)) { continue; } ?>
-                                    <option value="<?php echo esc_attr($branch); ?>"><?php echo esc_html($branch); ?></option>
-                                <?php endforeach; ?>
-                            </select>
-                            <button type="submit" name="git_preview_delete" class="button button-secondary">Preview Delete</button>
-                        </form>
-                    </div>
-                    <p class="description">A safety backup branch is created automatically before deletion.</p>
-
-                    <?php if ($default_branch === ''): ?>
-                        <p style="color:orange;">Default branch could not be detected. Deletion rules stay conservative.</p>
+                        </div>
+                    <?php else: ?>
+                        <p class="empty-state">No health report yet. Run a health check after saving your settings.</p>
                     <?php endif; ?>
-                </div>
-            </div>
-        <?php endif; ?>
+                </section>
 
-        <div class="activity-log common-wrapper">
-            <p class="sec-title">Activity Log</p>
-            <div class="activity-body">
-                <?php if (!empty($activity_log)): ?>
-                    <table class="widefat striped">
-                        <thead>
-                            <tr>
-                                <th>Time</th>
-                                <th>User</th>
-                                <th>Action</th>
-                                <th>Status</th>
-                                <th>Details</th>
-                            </tr>
-                        </thead>
-                        <tbody>
+                <section class="panel-card side-card">
+                    <div class="panel-head">
+                        <div>
+                            <p class="panel-kicker">History</p>
+                            <h2>Recent Activity</h2>
+                        </div>
+                    </div>
+
+                    <?php if (!empty($activity_log)): ?>
+                        <div class="timeline">
                             <?php foreach ($activity_log as $entry): ?>
-                                <tr>
-                                    <td><?php echo esc_html($entry['time'] ?? ''); ?></td>
-                                    <td><?php echo esc_html($entry['user_login'] ?? ''); ?></td>
-                                    <td><?php echo esc_html($entry['action'] ?? ''); ?></td>
-                                    <td><?php echo esc_html($entry['status'] ?? ''); ?></td>
-                                    <td><pre><?php echo esc_html($entry['details'] ?? ''); ?></pre></td>
-                                </tr>
+                                <div class="timeline-item">
+                                    <div class="timeline-top">
+                                        <strong><?php echo esc_html($entry['action'] ?? ''); ?></strong>
+                                        <span><?php echo esc_html($entry['status'] ?? ''); ?></span>
+                                    </div>
+                                    <p class="timeline-meta"><?php echo esc_html(($entry['time'] ?? '') . ' by ' . ($entry['user_login'] ?? '')); ?></p>
+                                    <p><?php echo esc_html($entry['details'] ?? ''); ?></p>
+                                </div>
                             <?php endforeach; ?>
-                        </tbody>
-                    </table>
-                <?php else: ?>
-                    <p>No activity recorded yet.</p>
-                <?php endif; ?>
-            </div>
+                        </div>
+                    <?php else: ?>
+                        <p class="empty-state">No activity recorded yet.</p>
+                    <?php endif; ?>
+                </section>
+            </aside>
         </div>
     </div>
 

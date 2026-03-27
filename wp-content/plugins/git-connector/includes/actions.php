@@ -292,12 +292,14 @@ function git_plugin_handle_push()
             return;
         }
 
-        $remote_name = git_get_primary_remote($path);
+        $remote_check = git_plugin_check_repo_remote_access($path);
 
-        if ($remote_name === '') {
-            git_plugin_finish_action('push', 'failed', 'No remote repository is connected yet.', 'error', $path);
+        if (!$remote_check['ok']) {
+            git_plugin_finish_action('push', 'failed', $remote_check['message'], 'error', $path);
             return;
         }
+
+        $remote_name = $remote_check['remote_name'];
 
         $branch = git_get_current_branch($path);
 
@@ -444,12 +446,14 @@ function git_plugin_handle_delete_branch()
             return;
         }
 
-        $remote_name = git_get_primary_remote($path);
+        $remote_check = git_plugin_check_repo_remote_access($path);
 
-        if ($remote_name === '') {
-            git_plugin_finish_action('delete_branch', 'failed', 'No remote found for deletion.', 'error', $path);
+        if (!$remote_check['ok']) {
+            git_plugin_finish_action('delete_branch', 'failed', $remote_check['message'], 'error', $path);
             return;
         }
+
+        $remote_name = $remote_check['remote_name'];
 
         $remote_result = run_git_command($path, 'push ' . escapeshellarg($remote_name) . ' --delete ' . escapeshellarg($branch));
         git_plugin_finish_action('delete_branch', $remote_result['status'] === 0 ? 'success' : 'failed', git_plugin_format_result_message($remote_result, 'Remote branch deleted.', 'Remote branch deletion failed.'), $remote_result['status'] === 0 ? 'updated' : 'error', $path);

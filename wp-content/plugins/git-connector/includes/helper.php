@@ -1053,6 +1053,63 @@ function git_plugin_get_remote_scheme($remote_url)
     return 'other';
 }
 
+function git_plugin_probe_remote_url($remote_url)
+{
+    if (trim((string) $remote_url) === '') {
+        return [
+            'status' => 1,
+            'output' => ['No remote URL configured.'],
+            'timed_out' => false,
+            'command' => 'ls-remote',
+        ];
+    }
+
+    return git_plugin_run_git_binary_command('ls-remote --heads ' . escapeshellarg($remote_url) . ' HEAD');
+}
+
+function git_plugin_check_repo_remote_access($path)
+{
+    $remote_name = git_get_primary_remote($path);
+
+    if ($remote_name === '') {
+        return [
+            'ok' => false,
+            'message' => 'No remote repository is connected yet.',
+            'remote_name' => '',
+            'remote_url' => '',
+        ];
+    }
+
+    $remote_url = git_get_remote_url($path, $remote_name);
+
+    if ($remote_url === '') {
+        return [
+            'ok' => false,
+            'message' => 'The configured remote URL could not be read from this repository.',
+            'remote_name' => $remote_name,
+            'remote_url' => '',
+        ];
+    }
+
+    $probe = git_plugin_probe_remote_url($remote_url);
+
+    if ($probe['status'] !== 0) {
+        return [
+            'ok' => false,
+            'message' => git_plugin_format_result_message($probe, '', 'Remote access pre-check failed.'),
+            'remote_name' => $remote_name,
+            'remote_url' => $remote_url,
+        ];
+    }
+
+    return [
+        'ok' => true,
+        'message' => 'Remote access pre-check succeeded.',
+        'remote_name' => $remote_name,
+        'remote_url' => $remote_url,
+    ];
+}
+
 function git_plugin_build_health_report($path = false, $remote_url = '')
 {
     $report = [

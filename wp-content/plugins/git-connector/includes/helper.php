@@ -169,6 +169,43 @@ function git_plugin_get_git_env()
     ];
 }
 
+function git_plugin_get_process_env()
+{
+    $env = [];
+    $keys = [
+        'SystemRoot',
+        'ComSpec',
+        'PATH',
+        'Path',
+        'PATHEXT',
+        'TEMP',
+        'TMP',
+        'USERPROFILE',
+        'APPDATA',
+        'LOCALAPPDATA',
+        'PROGRAMDATA',
+        'PROGRAMFILES',
+        'PROGRAMFILES(X86)',
+        'HOMEDRIVE',
+        'HOMEPATH',
+        'NUMBER_OF_PROCESSORS',
+    ];
+
+    foreach ($keys as $key) {
+        $value = getenv($key);
+
+        if ($value !== false && $value !== '') {
+            $env[$key] = $value;
+        }
+    }
+
+    foreach (git_plugin_get_git_env() as $key => $value) {
+        $env[$key] = $value;
+    }
+
+    return $env;
+}
+
 function git_plugin_execute_process($command, $cwd = null, $timeout = null)
 {
     $timeout = $timeout ?: git_plugin_get_git_timeout_seconds();
@@ -177,7 +214,7 @@ function git_plugin_execute_process($command, $cwd = null, $timeout = null)
         1 => ['pipe', 'w'],
         2 => ['pipe', 'w'],
     ];
-    $process = proc_open($command, $descriptors, $pipes, $cwd, array_merge($_ENV, git_plugin_get_git_env()));
+    $process = proc_open($command, $descriptors, $pipes, $cwd, git_plugin_get_process_env());
 
     if (!is_resource($process)) {
         return [
@@ -896,6 +933,10 @@ function git_plugin_diagnose_git_output(array $output)
 
     if (strpos($text, 'could not resolve host') !== false || strpos($text, 'name or service not known') !== false) {
         $diagnostics[] = 'DNS or network resolution failed while contacting the remote host.';
+    }
+
+    if (strpos($text, 'getaddrinfo() thread failed to start') !== false) {
+        $diagnostics[] = 'The PHP child process is missing required Windows environment variables for network lookups. Configure the Git executable path and ensure the web server process keeps SystemRoot, PATH, TEMP, and USERPROFILE.';
     }
 
     if (strpos($text, 'repository not found') !== false) {

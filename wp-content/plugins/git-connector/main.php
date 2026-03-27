@@ -16,7 +16,7 @@ require_once plugin_dir_path(__FILE__) . 'includes/settings.php';
 require_once plugin_dir_path(__FILE__) . 'includes/ui.php';
 
 // ======================================
-// Load CSS for Only Plugin settings page
+// Load CSS for Only Plugin settings page ss
 // ======================================
 function git_plugin_enqueue_styles($hook)
 {

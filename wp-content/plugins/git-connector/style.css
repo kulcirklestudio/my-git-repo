@@ -323,6 +323,11 @@
   color: var(--gc-muted);
 }
 
+.timeline-path,
+.health-meta {
+  color: var(--gc-muted);
+}
+
 .health-success {
   border-color: rgba(31, 122, 79, 0.28);
 }
@@ -354,7 +359,8 @@
 
 .git-plugin-app input[type="text"],
 .git-plugin-app input[type="password"],
-.git-plugin-app select {
+.git-plugin-app select,
+.git-plugin-app textarea {
   width: 100%;
   padding: 11px 14px;
   border-radius: 12px;
@@ -368,10 +374,16 @@
 
 .git-plugin-app input[type="text"]:focus,
 .git-plugin-app input[type="password"]:focus,
-.git-plugin-app select:focus {
+.git-plugin-app select:focus,
+.git-plugin-app textarea:focus {
   outline: none;
   border-color: rgba(15, 118, 110, 0.55);
   box-shadow: 0 0 0 4px rgba(15, 118, 110, 0.12);
+}
+
+.git-plugin-app textarea {
+  min-height: 110px;
+  resize: vertical;
 }
 
 .git-plugin-app .button,

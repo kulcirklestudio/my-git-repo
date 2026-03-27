@@ -40,6 +40,34 @@ function git_plugin_sanitize_checkbox($value)
     return empty($value) ? '0' : '1';
 }
 
+function git_plugin_sanitize_branch_patterns($value)
+{
+    $value = is_string($value) ? $value : '';
+    $lines = preg_split('/\r\n|\r|\n/', $value);
+    $clean = [];
+
+    foreach ($lines as $line) {
+        $pattern = trim($line);
+
+        if ($pattern === '') {
+            continue;
+        }
+
+        if (!preg_match('/^[A-Za-z0-9._*\/-]+$/', $pattern)) {
+            continue;
+        }
+
+        $clean[] = $pattern;
+    }
+
+    return implode("\n", array_unique($clean));
+}
+
+function git_plugin_crypto_available()
+{
+    return function_exists('openssl_encrypt') && function_exists('openssl_decrypt') && function_exists('random_bytes');
+}
+
 function git_plugin_get_encryption_key()
 {
     return hash('sha256', wp_salt('auth'), true);
@@ -49,8 +77,12 @@ function git_plugin_encrypt_value($value)
 {
     $value = (string) $value;
 
-    if ($value === '' || !function_exists('openssl_encrypt')) {
-        return $value;
+    if ($value === '') {
+        return '';
+    }
+
+    if (!git_plugin_crypto_available()) {
+        return false;
     }
 
     $iv = random_bytes(16);
@@ -63,7 +95,7 @@ function git_plugin_encrypt_value($value)
     );
 
     if ($ciphertext === false) {
-        return $value;
+        return false;
     }
 
     return 'gitc:v1:' . base64_encode($iv . $ciphertext);
@@ -81,7 +113,7 @@ function git_plugin_maybe_decrypt_value($value)
         return $value;
     }
 
-    if (!function_exists('openssl_decrypt')) {
+    if (!git_plugin_crypto_available()) {
         return '';
     }
 
@@ -119,6 +151,17 @@ function git_plugin_allow_protected_direct_changes()
     return get_option('git_plugin_allow_protected_direct_changes', '0') === '1';
 }
 
+function git_plugin_get_protected_branch_patterns()
+{
+    $saved = trim((string) get_option('git_plugin_protected_branches', 'main' . "\n" . 'master'));
+
+    if ($saved === '') {
+        return ['main', 'master'];
+    }
+
+    return array_values(array_filter(array_map('trim', preg_split('/\r\n|\r|\n/', $saved))));
+}
+
 function git_plugin_resolve_local_path($path)
 {
     $path = trim((string) $path);
@@ -151,7 +194,14 @@ function git_plugin_validate_local_path($path)
         return git_plugin_get_raw_option('git_plugin_local_path');
     }
 
-    return git_plugin_encrypt_value($real);
+    $encrypted = git_plugin_encrypt_value($real);
+
+    if ($encrypted === false) {
+        add_settings_error('git_plugin_local_path', 'crypto_required', 'OpenSSL support is required to save the local repository path securely.');
+        return git_plugin_get_raw_option('git_plugin_local_path');
+    }
+
+    return $encrypted;
 }
 
 function git_plugin_validate_remote_url($url)
@@ -176,7 +226,14 @@ function git_plugin_validate_remote_url($url)
         return git_plugin_get_raw_option('git_plugin_remote_url');
     }
 
-    return git_plugin_encrypt_value($url);
+    $encrypted = git_plugin_encrypt_value($url);
+
+    if ($encrypted === false) {
+        add_settings_error('git_plugin_remote_url', 'crypto_required_remote', 'OpenSSL support is required to save the remote URL securely.');
+        return git_plugin_get_raw_option('git_plugin_remote_url');
+    }
+
+    return $encrypted;
 }
 
 function git_plugin_get_configured_local_path()
@@ -382,9 +439,31 @@ function git_directory_has_non_git_files($path)
     return false;
 }
 
+function git_plugin_branch_matches_pattern($branch, $pattern)
+{
+    if ($pattern === $branch) {
+        return true;
+    }
+
+    if (strpos($pattern, '*') === false) {
+        return false;
+    }
+
+    $quoted = preg_quote($pattern, '/');
+    $regex = '/^' . str_replace('\*', '.*', $quoted) . '$/';
+
+    return (bool) preg_match($regex, $branch);
+}
+
 function git_is_protected_branch($branch)
 {
-    return in_array($branch, ['main', 'master'], true);
+    foreach (git_plugin_get_protected_branch_patterns() as $pattern) {
+        if (git_plugin_branch_matches_pattern($branch, $pattern)) {
+            return true;
+        }
+    }
+
+    return false;
 }
 
 function git_plugin_check_protected_branch_policy($path, $action_label)
@@ -397,7 +476,7 @@ function git_plugin_check_protected_branch_policy($path, $action_label)
 
     git_plugin_add_notice(
         'protected_branch_policy',
-        sprintf('Direct %s is blocked on protected branch "%s". Enable the setting if you want to allow it.', $action_label, $branch)
+        sprintf('Direct %s is blocked on protected branch "%s". Update the protected branch settings if this should be allowed.', $action_label, $branch)
     );
 
     return false;
@@ -443,6 +522,36 @@ function git_plugin_mask_remote_url($url)
 function git_plugin_mask_remote_output(array $lines)
 {
     return array_map('git_plugin_mask_remote_url', $lines);
+}
+
+function git_plugin_mask_path($path)
+{
+    $path = trim((string) $path);
+
+    if ($path === '') {
+        return '';
+    }
+
+    $normalized = str_replace('\\', '/', $path);
+    $segments = array_values(array_filter(explode('/', $normalized), 'strlen'));
+    $count = count($segments);
+
+    if ($count <= 2) {
+        return '...' . DIRECTORY_SEPARATOR . end($segments);
+    }
+
+    return '...' . DIRECTORY_SEPARATOR . $segments[$count - 2] . DIRECTORY_SEPARATOR . $segments[$count - 1];
+}
+
+function git_plugin_shorten_text($text, $limit = 220)
+{
+    $text = trim((string) $text);
+
+    if (strlen($text) <= $limit) {
+        return $text;
+    }
+
+    return rtrim(substr($text, 0, $limit - 3)) . '...';
 }
 
 function git_plugin_diagnose_git_output(array $output)
@@ -519,12 +628,13 @@ function git_plugin_record_activity($action, $status, $details = '', $path = '')
     }
 
     $user = wp_get_current_user();
+    $safe_details = git_plugin_shorten_text($details, 240);
     array_unshift($log, [
         'time' => current_time('mysql'),
         'action' => $action,
         'status' => $status,
-        'details' => $details,
-        'path' => $path,
+        'details' => $safe_details,
+        'path' => $path !== '' ? git_plugin_mask_path($path) : '',
         'user_id' => get_current_user_id(),
         'user_login' => $user instanceof WP_User ? $user->user_login : '',
     ]);
@@ -589,7 +699,7 @@ function git_plugin_build_health_report($path = false, $remote_url = '')
     $report['checks'][] = [
         'label' => 'Local path',
         'status' => $path && is_dir($path) ? 'success' : 'error',
-        'details' => $path && is_dir($path) ? $path : 'Configured local path is missing or invalid.'
+        'details' => $path && is_dir($path) ? git_plugin_mask_path($path) : 'Configured local path is missing or invalid.'
     ];
 
     if ($path && is_dir($path)) {
@@ -613,11 +723,7 @@ function git_plugin_build_health_report($path = false, $remote_url = '')
         $report['checks'][] = [
             'label' => 'Remote access',
             'status' => $probe['status'] === 0 ? 'success' : 'error',
-            'details' => git_plugin_format_result_message(
-                $probe,
-                'Remote access succeeded.',
-                'Remote access failed.'
-            )
+            'details' => git_plugin_format_result_message($probe, 'Remote access succeeded.', 'Remote access failed.')
         ];
 
         if ($scheme === 'ssh') {

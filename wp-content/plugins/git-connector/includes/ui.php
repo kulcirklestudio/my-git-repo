@@ -4,6 +4,7 @@ function render_git_settings_page()
     $saved_path = git_plugin_get_saved_local_path();
     $remote_url = git_plugin_get_saved_remote_url();
     $allow_protected_direct_changes = git_plugin_allow_protected_direct_changes();
+    $protected_branches = implode("\n", git_plugin_get_protected_branch_patterns());
     $path = git_plugin_resolve_local_path($saved_path);
     $is_repo = $path ? git_is_git_repository($path) : false;
     $health_report = git_plugin_get_health_report();
@@ -100,11 +101,17 @@ function render_git_settings_page()
                             <span class="field-help">Use HTTPS, SSH, or a local bare repository path.</span>
                         </label>
 
+                        <label class="field-block">
+                            <span class="field-label">Protected Branches</span>
+                            <textarea name="git_plugin_protected_branches" rows="4" placeholder="main&#10;master&#10;release/*"><?php echo esc_textarea($protected_branches); ?></textarea>
+                            <span class="field-help">One branch pattern per line. `*` is allowed, for example `release/*`.</span>
+                        </label>
+
                         <label class="toggle-card">
                             <input type="hidden" name="git_plugin_allow_protected_direct_changes" value="0">
                             <input type="checkbox" name="git_plugin_allow_protected_direct_changes" value="1" <?php checked($allow_protected_direct_changes); ?>>
                             <span>
-                                <strong>Allow direct commits and pushes on `main` / `master`</strong>
+                                <strong>Allow direct commits, pushes, and merges on protected branches</strong>
                                 <small>Keep this off for safer beginner workflows.</small>
                             </span>
                         </label>
@@ -113,7 +120,7 @@ function render_git_settings_page()
                     </form>
 
                     <div class="action-strip">
-                        <form method="post">
+                        <form method="post" onsubmit="return confirm('Connect or update the remote repository for this local folder?');">
                             <?php wp_nonce_field('git_connect_remote_action', 'git_connect_remote_nonce'); ?>
                             <button type="submit" name="git_connect_remote" class="button button-primary">
                                 <?php echo esc_html($is_repo ? 'Connect or Update Remote' : 'Initialize and Connect'); ?>
@@ -138,7 +145,7 @@ function render_git_settings_page()
                     <div class="summary-grid">
                         <div class="summary-tile">
                             <span class="summary-label">Local Folder</span>
-                            <strong><?php echo esc_html($path ? $path : 'Not available'); ?></strong>
+                            <strong><?php echo esc_html($path ? git_plugin_mask_path($path) : 'Not available'); ?></strong>
                         </div>
                         <div class="summary-tile">
                             <span class="summary-label">Current Branch</span>
@@ -162,7 +169,7 @@ function render_git_settings_page()
                         <div class="notice notice-warning"><p>This folder exists but is not a Git repository yet. Use the connect button above to initialize it.</p></div>
                     <?php else: ?>
                         <?php if (git_is_protected_branch($current_branch) && !$allow_protected_direct_changes): ?>
-                            <div class="notice notice-warning"><p>Protected branch mode is active. Direct commit and push on this branch are blocked.</p></div>
+                            <div class="notice notice-warning"><p>Protected branch mode is active. Direct commit, push, and merge into this branch are blocked.</p></div>
                         <?php endif; ?>
 
                         <div class="subpanel">
@@ -236,7 +243,7 @@ function render_git_settings_page()
                             <div class="task-card">
                                 <h3>Backup Current Branch</h3>
                                 <p>Create a backup branch from the current branch before you do risky work.</p>
-                                <form method="post">
+                                <form method="post" onsubmit="return confirm('Create a backup branch from the current branch?');">
                                     <?php wp_nonce_field('git_backup_branch_action', 'git_backup_branch_nonce'); ?>
                                     <button type="submit" name="git_backup_branch" class="button button-secondary">Create Backup Branch</button>
                                 </form>
@@ -278,7 +285,7 @@ function render_git_settings_page()
                             <div class="task-card">
                                 <h3>Merge Branch</h3>
                                 <p>Merge another branch into the branch you are currently on.</p>
-                                <form method="post" class="task-form">
+                                <form method="post" class="task-form" onsubmit="return confirm('Merge the selected branch into the current branch?');">
                                     <?php wp_nonce_field('git_merge_branch_action', 'git_merge_branch_nonce'); ?>
                                     <select name="merge_branch">
                                         <?php foreach ($branches as $branch): ?>
@@ -294,7 +301,7 @@ function render_git_settings_page()
                             <div class="task-card danger-card">
                                 <h3>Delete Branch</h3>
                                 <p>Delete a branch that is not active and not protected.</p>
-                                <form method="post" class="task-form">
+                                <form method="post" class="task-form" onsubmit="return confirm('Delete the selected branch? If remote delete is checked, the remote branch will also be removed.');">
                                     <?php wp_nonce_field('git_delete_branch_action', 'git_delete_branch_nonce'); ?>
                                     <select name="delete_branch">
                                         <?php foreach ($branches as $branch): ?>
@@ -324,7 +331,7 @@ function render_git_settings_page()
                     </div>
 
                     <?php if (!empty($health_report['checks'])): ?>
-                        <p class="field-help">Last generated: <?php echo esc_html($health_report['generated_at'] ?? 'unknown'); ?></p>
+                        <p class="field-help health-meta">Last generated: <?php echo esc_html($health_report['generated_at'] ?? 'unknown'); ?></p>
                         <div class="health-stack">
                             <?php foreach ($health_report['checks'] as $check): ?>
                                 <div class="health-item health-<?php echo esc_attr($check['status']); ?>">
@@ -337,7 +344,7 @@ function render_git_settings_page()
                             <?php endforeach; ?>
                         </div>
                     <?php else: ?>
-                        <p class="empty-state">No health report yet. Run a health check after saving your settings.</p>
+                        <p class="empty-state health-meta">No health report yet. Run a health check after saving your settings.</p>
                     <?php endif; ?>
                 </section>
 
@@ -358,12 +365,15 @@ function render_git_settings_page()
                                         <span><?php echo esc_html($entry['status'] ?? ''); ?></span>
                                     </div>
                                     <p class="timeline-meta"><?php echo esc_html(($entry['time'] ?? '') . ' by ' . ($entry['user_login'] ?? '')); ?></p>
+                                    <?php if (!empty($entry['path'])): ?>
+                                        <p class="timeline-path"><?php echo esc_html($entry['path']); ?></p>
+                                    <?php endif; ?>
                                     <p><?php echo esc_html($entry['details'] ?? ''); ?></p>
                                 </div>
                             <?php endforeach; ?>
                         </div>
                     <?php else: ?>
-                        <p class="empty-state">No activity recorded yet.</p>
+                        <p class="empty-state health-meta">No activity recorded yet.</p>
                     <?php endif; ?>
                 </section>
             </aside>

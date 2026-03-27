@@ -366,6 +366,11 @@ add_action('admin_init', function () {
             return;
         }
 
+        if (!git_plugin_check_protected_branch_policy($path, 'merge into')) {
+            git_plugin_record_activity('merge', 'blocked', 'Protected branch policy blocked a merge into the current branch.', $path);
+            return;
+        }
+
         $result = run_git_command($path, 'merge ' . escapeshellarg($branch));
         git_plugin_finish_action('merge', $result['status'] === 0 ? 'success' : 'failed', git_plugin_format_result_message($result, 'Merge completed.', 'Merge failed.'), $result['status'] === 0 ? 'updated' : 'error', $path);
     }

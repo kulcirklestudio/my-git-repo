@@ -17,6 +17,12 @@ add_action('admin_init', function () {
         'sanitize_callback' => 'git_plugin_sanitize_checkbox',
         'default' => '0'
     ]);
+
+    register_setting('git_plugin_settings_group', 'git_plugin_protected_branches', [
+        'type' => 'string',
+        'sanitize_callback' => 'git_plugin_sanitize_branch_patterns',
+        'default' => "main\nmaster"
+    ]);
 });
 
 add_action('admin_menu', function () {

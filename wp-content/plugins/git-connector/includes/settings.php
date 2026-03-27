@@ -12,6 +12,24 @@ add_action('admin_init', function () {
         'default' => ''
     ]);
 
+    register_setting('git_plugin_settings_group', 'git_plugin_git_binary', [
+        'type' => 'string',
+        'sanitize_callback' => 'git_plugin_validate_git_binary',
+        'default' => ''
+    ]);
+
+    register_setting('git_plugin_settings_group', 'git_plugin_author_name', [
+        'type' => 'string',
+        'sanitize_callback' => 'sanitize_text_field',
+        'default' => ''
+    ]);
+
+    register_setting('git_plugin_settings_group', 'git_plugin_author_email', [
+        'type' => 'string',
+        'sanitize_callback' => 'sanitize_email',
+        'default' => ''
+    ]);
+
     register_setting('git_plugin_settings_group', 'git_plugin_allow_protected_direct_changes', [
         'type' => 'string',
         'sanitize_callback' => 'git_plugin_sanitize_checkbox',

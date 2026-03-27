@@ -4,35 +4,264 @@ function git_plugin_get_raw_option($option_name)
     return get_option($option_name, '');
 }
 
-function run_git_command($path, $command)
+function git_plugin_get_default_git_binary_candidates()
 {
-    $output = [];
-    $status = 0;
+    return [
+        'git',
+        'C:\\Program Files\\Git\\cmd\\git.exe',
+        'C:\\Program Files\\Git\\bin\\git.exe',
+        'C:\\Program Files (x86)\\Git\\cmd\\git.exe',
+        'C:\\Program Files (x86)\\Git\\bin\\git.exe',
+    ];
+}
 
-    exec('git -C ' . escapeshellarg($path) . ' ' . $command . ' 2>&1', $output, $status);
+function git_plugin_is_windows_absolute_path($path)
+{
+    return (bool) preg_match('/^[A-Za-z]:[\\\\\/]/', (string) $path);
+}
+
+function git_plugin_detect_git_binary()
+{
+    foreach (git_plugin_get_default_git_binary_candidates() as $candidate) {
+        if ($candidate === 'git') {
+            $probe = git_plugin_execute_process('git --version');
+
+            if ($probe['status'] === 0) {
+                return 'git';
+            }
+
+            continue;
+        }
+
+        if (is_file($candidate)) {
+            return $candidate;
+        }
+    }
+
+    return 'git';
+}
+
+function git_plugin_get_git_binary()
+{
+    $saved = trim((string) get_option('git_plugin_git_binary', ''));
+
+    if ($saved !== '') {
+        return $saved;
+    }
+
+    return git_plugin_detect_git_binary();
+}
+
+function git_plugin_validate_git_binary($value)
+{
+    $value = trim((string) $value);
+
+    if ($value === '') {
+        $value = git_plugin_detect_git_binary();
+    }
+
+    if (git_plugin_is_windows_absolute_path($value)) {
+        if (!is_file($value)) {
+            add_settings_error('git_plugin_git_binary', 'invalid_git_binary', 'Git executable path does not exist.');
+            return git_plugin_get_raw_option('git_plugin_git_binary');
+        }
+
+        return $value;
+    }
+
+    $probe = git_plugin_execute_process(escapeshellarg($value) . ' --version');
+
+    if ($probe['status'] !== 0) {
+        add_settings_error('git_plugin_git_binary', 'invalid_git_binary_command', 'The configured Git command could not be executed.');
+        return git_plugin_get_raw_option('git_plugin_git_binary');
+    }
+
+    return $value;
+}
+
+function git_plugin_get_page_url()
+{
+    return admin_url('admin.php?page=create-git-branch');
+}
+
+function git_plugin_get_notice_meta_key()
+{
+    return '_git_plugin_persisted_notices';
+}
+
+function git_plugin_notice_persistence_enabled()
+{
+    return !empty($GLOBALS['git_plugin_persist_notices']);
+}
+
+function git_plugin_enable_notice_persistence()
+{
+    $GLOBALS['git_plugin_persist_notices'] = true;
+}
+
+function git_plugin_disable_notice_persistence()
+{
+    $GLOBALS['git_plugin_persist_notices'] = false;
+}
+
+function git_plugin_persist_notice($code, $message, $type)
+{
+    $user_id = get_current_user_id();
+
+    if (!$user_id) {
+        return;
+    }
+
+    $existing = get_user_meta($user_id, git_plugin_get_notice_meta_key(), true);
+
+    if (!is_array($existing)) {
+        $existing = [];
+    }
+
+    $existing[] = [
+        'code' => (string) $code,
+        'message' => (string) $message,
+        'type' => (string) $type,
+    ];
+
+    update_user_meta($user_id, git_plugin_get_notice_meta_key(), $existing);
+}
+
+function git_plugin_restore_persisted_notices()
+{
+    $user_id = get_current_user_id();
+
+    if (!$user_id) {
+        return;
+    }
+
+    $notices = get_user_meta($user_id, git_plugin_get_notice_meta_key(), true);
+
+    if (!is_array($notices) || empty($notices)) {
+        return;
+    }
+
+    delete_user_meta($user_id, git_plugin_get_notice_meta_key());
+
+    foreach ($notices as $notice) {
+        add_settings_error(
+            'git_plugin',
+            $notice['code'] ?? 'git_plugin_notice',
+            $notice['message'] ?? '',
+            $notice['type'] ?? 'error'
+        );
+    }
+}
+
+function git_plugin_get_git_timeout_seconds()
+{
+    return 45;
+}
+
+function git_plugin_get_git_env()
+{
+    return [
+        'GIT_TERMINAL_PROMPT' => '0',
+        'GCM_INTERACTIVE' => 'Never',
+        'GIT_ASKPASS' => '',
+        'SSH_ASKPASS' => '',
+        'GIT_PAGER' => 'cat',
+    ];
+}
+
+function git_plugin_execute_process($command, $cwd = null, $timeout = null)
+{
+    $timeout = $timeout ?: git_plugin_get_git_timeout_seconds();
+    $descriptors = [
+        0 => ['pipe', 'r'],
+        1 => ['pipe', 'w'],
+        2 => ['pipe', 'w'],
+    ];
+    $process = proc_open($command, $descriptors, $pipes, $cwd, array_merge($_ENV, git_plugin_get_git_env()));
+
+    if (!is_resource($process)) {
+        return [
+            'output' => ['Could not start Git process.'],
+            'status' => 1,
+            'timed_out' => false,
+            'command' => $command,
+        ];
+    }
+
+    fclose($pipes[0]);
+    stream_set_blocking($pipes[1], false);
+    stream_set_blocking($pipes[2], false);
+
+    $stdout = '';
+    $stderr = '';
+    $start = microtime(true);
+    $timed_out = false;
+
+    do {
+        $stdout .= stream_get_contents($pipes[1]);
+        $stderr .= stream_get_contents($pipes[2]);
+        $status = proc_get_status($process);
+
+        if (!$status['running']) {
+            break;
+        }
+
+        if ((microtime(true) - $start) >= $timeout) {
+            $timed_out = true;
+            proc_terminate($process);
+            break;
+        }
+
+        usleep(100000);
+    } while (true);
+
+    $stdout .= stream_get_contents($pipes[1]);
+    $stderr .= stream_get_contents($pipes[2]);
+
+    fclose($pipes[1]);
+    fclose($pipes[2]);
+
+    $exit_code = proc_close($process);
+
+    if ($timed_out) {
+        $exit_code = 124;
+        $stderr .= ($stderr !== '' ? "\n" : '') . 'Git command timed out.';
+    }
+
+    $combined = trim($stdout . ($stderr !== '' ? "\n" . $stderr : ''));
+    $lines = $combined === '' ? [] : preg_split('/\r\n|\r|\n/', $combined);
 
     return [
-        'output' => $output,
-        'status' => $status,
+        'output' => $lines,
+        'status' => $exit_code,
+        'timed_out' => $timed_out,
+        'command' => $command,
     ];
+}
+
+function run_git_command($path, $command)
+{
+    $git_binary = git_plugin_get_git_binary();
+    $git_command = git_plugin_is_windows_absolute_path($git_binary) ? escapeshellarg($git_binary) : $git_binary;
+
+    return git_plugin_execute_process($git_command . ' -C ' . escapeshellarg($path) . ' ' . $command, null);
 }
 
 function git_plugin_run_git_binary_command($command)
 {
-    $output = [];
-    $status = 0;
+    $git_binary = git_plugin_get_git_binary();
+    $git_command = git_plugin_is_windows_absolute_path($git_binary) ? escapeshellarg($git_binary) : $git_binary;
 
-    exec('git ' . $command . ' 2>&1', $output, $status);
-
-    return [
-        'output' => $output,
-        'status' => $status,
-    ];
+    return git_plugin_execute_process($git_command . ' ' . $command, null);
 }
 
 function git_plugin_add_notice($code, $message, $type = 'error')
 {
     add_settings_error('git_plugin', $code, $message, $type);
+
+    if (git_plugin_notice_persistence_enabled()) {
+        git_plugin_persist_notice($code, $message, $type);
+    }
 }
 
 function git_plugin_sanitize_checkbox($value)
@@ -146,6 +375,16 @@ function git_plugin_get_saved_remote_url()
     return trim((string) git_plugin_maybe_decrypt_value(git_plugin_get_raw_option('git_plugin_remote_url')));
 }
 
+function git_plugin_get_saved_author_name()
+{
+    return trim((string) get_option('git_plugin_author_name', ''));
+}
+
+function git_plugin_get_saved_author_email()
+{
+    return trim((string) get_option('git_plugin_author_email', ''));
+}
+
 function git_plugin_allow_protected_direct_changes()
 {
     return get_option('git_plugin_allow_protected_direct_changes', '0') === '1';
@@ -153,7 +392,7 @@ function git_plugin_allow_protected_direct_changes()
 
 function git_plugin_get_protected_branch_patterns()
 {
-    $saved = trim((string) get_option('git_plugin_protected_branches', 'main' . "\n" . 'master'));
+    $saved = trim((string) get_option('git_plugin_protected_branches', "main\nmaster"));
 
     if ($saved === '') {
         return ['main', 'master'];
@@ -334,6 +573,93 @@ function git_get_remote_url($path, $remote_name)
     }
 
     return trim($result['output'][0] ?? '');
+}
+
+function git_plugin_get_repo_config($path, $key)
+{
+    $result = run_git_command($path, 'config --local --get ' . escapeshellarg($key));
+
+    if ($result['status'] !== 0) {
+        return '';
+    }
+
+    return trim($result['output'][0] ?? '');
+}
+
+function git_plugin_set_repo_config($path, $key, $value)
+{
+    return run_git_command($path, 'config --local ' . escapeshellarg($key) . ' ' . escapeshellarg($value));
+}
+
+function git_plugin_get_repo_identity($path)
+{
+    return [
+        'name' => git_plugin_get_repo_config($path, 'user.name'),
+        'email' => git_plugin_get_repo_config($path, 'user.email'),
+    ];
+}
+
+function git_plugin_validate_author_identity($name, $email)
+{
+    $name = trim((string) $name);
+    $email = trim((string) $email);
+
+    if ($name === '' || $email === '') {
+        return false;
+    }
+
+    return is_email($email) ? ['name' => $name, 'email' => $email] : false;
+}
+
+function git_plugin_ensure_repo_identity($path)
+{
+    $identity = git_plugin_get_repo_identity($path);
+
+    if ($identity['name'] !== '' && $identity['email'] !== '') {
+        return [
+            'ok' => true,
+            'configured' => false,
+            'message' => 'Repository author identity already configured.',
+        ];
+    }
+
+    $saved_name = git_plugin_get_saved_author_name();
+    $saved_email = git_plugin_get_saved_author_email();
+    $saved_identity = git_plugin_validate_author_identity($saved_name, $saved_email);
+
+    if ($saved_identity === false) {
+        return [
+            'ok' => false,
+            'configured' => false,
+            'message' => 'Set Author Name and Author Email in the plugin settings before commit or merge.',
+        ];
+    }
+
+    $name_result = git_plugin_set_repo_config($path, 'user.name', $saved_identity['name']);
+
+    if ($name_result['status'] !== 0) {
+        return [
+            'ok' => false,
+            'configured' => false,
+            'message' => git_plugin_format_result_message($name_result, '', 'Could not set repository author name.'),
+        ];
+    }
+
+    $email_result = git_plugin_set_repo_config($path, 'user.email', $saved_identity['email']);
+
+    if ($email_result['status'] !== 0) {
+        return [
+            'ok' => false,
+            'configured' => false,
+            'message' => git_plugin_format_result_message($email_result, '', 'Could not set repository author email.'),
+        ];
+    }
+
+    return [
+        'ok' => true,
+        'configured' => true,
+        'message' => 'Configured repository author identity from plugin settings.',
+    ];
 }
 
 function git_find_remote_by_url($path, $url)
@@ -596,6 +922,10 @@ function git_plugin_diagnose_git_output(array $output)
         $diagnostics[] = 'Git detected a merge conflict that needs manual resolution.';
     }
 
+    if (strpos($text, 'timed out') !== false) {
+        $diagnostics[] = 'The Git command took too long and was stopped. Check network access, credentials, or repository size.';
+    }
+
     return implode("\n", array_unique($diagnostics));
 }
 
@@ -708,6 +1038,24 @@ function git_plugin_build_health_report($path = false, $remote_url = '')
             'status' => git_is_git_repository($path) ? 'success' : 'warning',
             'details' => git_is_git_repository($path) ? 'Git repository detected.' : 'Folder exists but is not a Git repository yet.'
         ];
+
+        if (git_is_git_repository($path)) {
+            $identity = git_plugin_get_repo_identity($path);
+            $saved_identity = git_plugin_validate_author_identity(
+                git_plugin_get_saved_author_name(),
+                git_plugin_get_saved_author_email()
+            );
+
+            $report['checks'][] = [
+                'label' => 'Author identity',
+                'status' => ($identity['name'] !== '' && $identity['email'] !== '') ? 'success' : ($saved_identity ? 'warning' : 'error'),
+                'details' => ($identity['name'] !== '' && $identity['email'] !== '')
+                    ? sprintf('Repo identity is set to %s <%s>.', $identity['name'], $identity['email'])
+                    : ($saved_identity
+                        ? sprintf('Repo identity is missing. Plugin settings can apply %s <%s> automatically.', $saved_identity['name'], $saved_identity['email'])
+                        : 'Repo identity is missing. Set Author Name and Author Email in plugin settings.')
+            ];
+        }
     }
 
     $scheme = git_plugin_get_remote_scheme($remote_url);
@@ -765,4 +1113,47 @@ function git_plugin_render_health_summary($report)
     }
 
     return trim(implode("\n", $lines));
+}
+
+function git_plugin_get_lock_key($path)
+{
+    return 'git_plugin_lock_' . md5((string) $path);
+}
+
+function git_plugin_acquire_lock($path, $operation)
+{
+    $lock_key = git_plugin_get_lock_key($path);
+    $existing = get_transient($lock_key);
+
+    if (is_array($existing) && !empty($existing['token'])) {
+        git_plugin_add_notice(
+            'git_plugin_lock_active',
+            sprintf('Another Git operation is already running for %s. Wait for it to finish before starting %s.', git_plugin_mask_path($path), $operation),
+            'error'
+        );
+        return false;
+    }
+
+    $token = wp_generate_password(20, false, false);
+    set_transient($lock_key, [
+        'token' => $token,
+        'operation' => $operation,
+        'time' => time(),
+    ], 2 * MINUTE_IN_SECONDS);
+
+    return $token;
+}
+
+function git_plugin_release_lock($path, $token)
+{
+    if ($token === false || $token === null) {
+        return;
+    }
+
+    $lock_key = git_plugin_get_lock_key($path);
+    $existing = get_transient($lock_key);
+
+    if (is_array($existing) && ($existing['token'] ?? '') === $token) {
+        delete_transient($lock_key);
+    }
 }

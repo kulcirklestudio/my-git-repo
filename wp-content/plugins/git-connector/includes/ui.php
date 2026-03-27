@@ -1,8 +1,13 @@
 <?php
 function render_git_settings_page()
 {
+    git_plugin_restore_persisted_notices();
+
     $saved_path = git_plugin_get_saved_local_path();
     $remote_url = git_plugin_get_saved_remote_url();
+    $git_binary = git_plugin_get_git_binary();
+    $author_name = git_plugin_get_saved_author_name();
+    $author_email = git_plugin_get_saved_author_email();
     $allow_protected_direct_changes = git_plugin_allow_protected_direct_changes();
     $protected_branches = implode("\n", git_plugin_get_protected_branch_patterns());
     $path = git_plugin_resolve_local_path($saved_path);
@@ -17,6 +22,8 @@ function render_git_settings_page()
     $primary_remote = '';
     $default_branch = '';
     $connected_remote_name = '';
+    $repo_identity_name = '';
+    $repo_identity_email = '';
 
     if ($is_repo) {
         $current_branch = git_get_current_branch($path);
@@ -27,6 +34,9 @@ function render_git_settings_page()
         $remote_output = $remote_result['status'] === 0 ? git_plugin_mask_remote_output($remote_result['output']) : [];
         $status_result = run_git_command($path, 'status --porcelain');
         $repo_status = $status_result['status'] === 0 ? $status_result['output'] : [];
+        $repo_identity = git_plugin_get_repo_identity($path);
+        $repo_identity_name = $repo_identity['name'];
+        $repo_identity_email = $repo_identity['email'];
 
         if ($remote_url !== '') {
             $connected_remote_name = git_find_remote_by_url($path, $remote_url);
@@ -102,6 +112,38 @@ function render_git_settings_page()
                         </label>
 
                         <label class="field-block">
+                            <span class="field-label">Git Executable</span>
+                            <input
+                                type="text"
+                                name="git_plugin_git_binary"
+                                value="<?php echo esc_attr($git_binary); ?>"
+                                placeholder="C:\Program Files\Git\cmd\git.exe">
+                            <span class="field-help">Use a full path like `C:\Program Files\Git\cmd\git.exe` if the web server cannot find `git` in PATH.</span>
+                        </label>
+
+                        <div class="field-split">
+                            <label class="field-block">
+                                <span class="field-label">Author Name</span>
+                                <input
+                                    type="text"
+                                    name="git_plugin_author_name"
+                                    value="<?php echo esc_attr($author_name); ?>"
+                                    placeholder="Your Name">
+                                <span class="field-help">Used to configure the repository automatically if `user.name` is missing.</span>
+                            </label>
+
+                            <label class="field-block">
+                                <span class="field-label">Author Email</span>
+                                <input
+                                    type="text"
+                                    name="git_plugin_author_email"
+                                    value="<?php echo esc_attr($author_email); ?>"
+                                    placeholder="you@example.com">
+                                <span class="field-help">Used to configure the repository automatically if `user.email` is missing.</span>
+                            </label>
+                        </div>
+
+                        <label class="field-block">
                             <span class="field-label">Protected Branches</span>
                             <textarea name="git_plugin_protected_branches" rows="4" placeholder="main&#10;master&#10;release/*"><?php echo esc_textarea($protected_branches); ?></textarea>
                             <span class="field-help">One branch pattern per line. `*` is allowed, for example `release/*`.</span>
@@ -158,6 +200,10 @@ function render_git_settings_page()
                         <div class="summary-tile">
                             <span class="summary-label">Connected Remote</span>
                             <strong><?php echo esc_html($primary_remote !== '' ? $primary_remote : 'Not connected'); ?></strong>
+                        </div>
+                        <div class="summary-tile">
+                            <span class="summary-label">Author Identity</span>
+                            <strong><?php echo esc_html(($repo_identity_name !== '' && $repo_identity_email !== '') ? ($repo_identity_name . ' <' . $repo_identity_email . '>') : 'Not configured'); ?></strong>
                         </div>
                     </div>
 

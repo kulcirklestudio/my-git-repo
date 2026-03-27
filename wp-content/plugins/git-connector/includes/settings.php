@@ -11,11 +11,14 @@ add_action('admin_init', function () {
         'sanitize_callback' => 'git_plugin_validate_remote_url',
         'default' => ''
     ]);
+
+    register_setting('git_plugin_settings_group', 'git_plugin_allow_protected_direct_changes', [
+        'type' => 'string',
+        'sanitize_callback' => 'git_plugin_sanitize_checkbox',
+        'default' => '0'
+    ]);
 });
 
-// ===============================
-// Admin Menu: Create Git Branch
-// ===============================
 add_action('admin_menu', function () {
     add_menu_page(
         'Create Git Branch',

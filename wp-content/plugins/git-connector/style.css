@@ -632,6 +632,18 @@
   margin-top: var(--gh-spacing-md);
 }
 
+.secure-input-row {
+  display: flex;
+  align-items: center;
+  gap: var(--gh-spacing-sm);
+  flex-wrap: wrap;
+}
+
+.secure-input-row .git-plugin-sensitive-input {
+  flex: 1;
+  min-width: 300px;
+}
+
 .connection-success,
 .connection-warning {
   padding: var(--gh-spacing-sm) var(--gh-spacing-md);
@@ -655,4 +667,73 @@
   color: var(--gh-accent-purple);
   background: rgba(130, 80, 223, 0.1);
   border-color: rgba(130, 80, 223, 0.2);
+}
+
+.action-row {
+  display: flex;
+  align-items: center;
+  gap: var(--gh-spacing-sm);
+  flex-wrap: wrap;
+  margin-top: var(--gh-spacing-sm);
+}
+
+.settings-checkbox {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--gh-text-primary);
+}
+
+.health-check-body,
+.activity-body {
+  padding: var(--gh-spacing-lg);
+}
+
+.health-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: var(--gh-spacing-md);
+  margin-top: var(--gh-spacing-md);
+}
+
+.health-card {
+  border: 1px solid var(--gh-border);
+  border-radius: var(--gh-radius);
+  padding: var(--gh-spacing-md);
+  background: var(--gh-bg-secondary);
+}
+
+.health-card h3 {
+  margin: 0 0 6px 0;
+  font-size: 14px;
+}
+
+.health-status {
+  font-size: 12px;
+  font-weight: 600;
+  margin-bottom: var(--gh-spacing-sm);
+}
+
+.health-success {
+  border-color: rgba(26, 127, 55, 0.3);
+}
+
+.health-warning {
+  border-color: rgba(191, 135, 0, 0.35);
+}
+
+.health-error {
+  border-color: rgba(207, 34, 46, 0.35);
+}
+
+.health-info {
+  border-color: rgba(9, 105, 218, 0.35);
+}
+
+.health-card pre,
+.activity-body pre {
+  white-space: pre-wrap;
+  word-break: break-word;
+  margin: 0;
 }

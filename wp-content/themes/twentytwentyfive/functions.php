@@ -171,3 +171,50 @@ if (!function_exists('twentytwentyfive_format_binding')):
 		}
 	}
 endif;
+
+add_filter('wpcf7_validate_email*', 'cf7_rate_limit_validation', 20, 2);
+function cf7_rate_limit_validation($result, $tag)
+{
+	$email = isset($_POST[$tag->name]) ? sanitize_email($_POST[$tag->name]) : '';
+
+	if (empty($email)) {
+		return $result;
+	}
+
+	$emails = get_option('cf7_email_log', []);
+	$current_time = time();
+	$limit = 24 * 3600;
+
+	// Clean expired emails (older than 24 hours)
+	foreach ($emails as $stored_email => $timestamp) {
+		if (($current_time - $timestamp) >= $limit) {
+			unset($emails[$stored_email]);
+		}
+	}
+	update_option('cf7_email_log', $emails);
+
+	if (isset($emails[$email])) {
+		$remaining = $limit - ($current_time - $emails[$email]);
+		$h = floor($remaining / 3600);
+		$result->invalidate($tag, "Try again after {$h} hours from your last submission.");
+	}
+
+	return $result;
+}
+
+add_action('wpcf7_before_send_mail', 'cf7_save_email_timestamp');
+function cf7_save_email_timestamp()
+{
+	$submission = WPCF7_Submission::get_instance();
+	if (!$submission)
+		return;
+
+	$posted_data = $submission->get_posted_data();
+	$email = isset($posted_data['your-email']) ? sanitize_email($posted_data['your-email']) : '';
+
+	if (!empty($email)) {
+		$emails = get_option('cf7_email_log', []);
+		$emails[$email] = time();
+		update_option('cf7_email_log', $emails);
+	}
+}

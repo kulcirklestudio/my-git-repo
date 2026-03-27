@@ -154,12 +154,6 @@
   gap: 18px;
 }
 
-.field-split {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 14px;
-}
-
 .field-block {
   display: flex;
   flex-direction: column;
@@ -329,11 +323,6 @@
   color: var(--gc-muted);
 }
 
-.timeline-path,
-.health-meta {
-  color: var(--gc-muted);
-}
-
 .health-success {
   border-color: rgba(31, 122, 79, 0.28);
 }
@@ -365,8 +354,7 @@
 
 .git-plugin-app input[type="text"],
 .git-plugin-app input[type="password"],
-.git-plugin-app select,
-.git-plugin-app textarea {
+.git-plugin-app select {
   width: 100%;
   padding: 11px 14px;
   border-radius: 12px;
@@ -380,16 +368,10 @@
 
 .git-plugin-app input[type="text"]:focus,
 .git-plugin-app input[type="password"]:focus,
-.git-plugin-app select:focus,
-.git-plugin-app textarea:focus {
+.git-plugin-app select:focus {
   outline: none;
   border-color: rgba(15, 118, 110, 0.55);
   box-shadow: 0 0 0 4px rgba(15, 118, 110, 0.12);
-}
-
-.git-plugin-app textarea {
-  min-height: 110px;
-  resize: vertical;
 }
 
 .git-plugin-app .button,
@@ -534,9 +516,5 @@
 
   .hero-copy h1 {
     font-size: 28px;
-  }
-
-  .field-split {
-    grid-template-columns: 1fr;
   }
 }
